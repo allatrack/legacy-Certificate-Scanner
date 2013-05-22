@@ -112,10 +112,10 @@
       <DependentUpon>WaitWindowGUI.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
-    <None Include="config.ini">
+    <None Include="config\config.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="messages.ini">
+    <None Include="config\messages.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="NLog.config">
@@ -132,6 +132,11 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Dlls\AForge.dll" />
+    <Content Include="Dlls\AForge.Imaging.dll" />
+    <Content Include="Dlls\AForge.Math.dll" />
+    <Content Include="Dlls\FreeImage.dll" />
+    <Content Include="Dlls\FreeImageNET.dll" />
     <Content Include="ImageProcessing\BarcodeImaging.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -142,6 +147,7 @@
     <Content Include="ImageProcessing\zxing.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Dlls\zxing.dll" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ADFScanner\Scanner.csproj">
