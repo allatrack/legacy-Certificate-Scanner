@@ -560,6 +560,50 @@ namespace CertificateScanner
             }
         }
 
+        private void button2_Click(object sender, EventArgs e)
+        {
+            using (CertificateScanner.ImageProcessing.ImageCorrection fCrop = new CertificateScanner.ImageProcessing.ImageCorrection(pictureBoxSignature.Image, false))
+                fCrop.ShowDialog();
+
+            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
+            {
+                IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
+
+                _signRect = RectAndINI.ReadRectFromIni(oIni, "Regionsign");
+            }
+
+            using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmp.jpg"), FileMode.Open)) //File not block
+            {
+                var bmp = new Bitmap(fs);
+                var sourceimg = (Bitmap)bmp.Clone();
+
+                //Signature
+                pictureBoxSignature.Image = ImageComputation.ImageConvertions.MakeGrayscale3(new Bitmap(sourceimg).Clone(_signRect, PixelFormat.Format24bppRgb));
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            using (CertificateScanner.ImageProcessing.ImageCorrection fCrop = new CertificateScanner.ImageProcessing.ImageCorrection(pictureBoxPhoto.Image, true))
+                fCrop.ShowDialog();
+
+            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
+            {
+                IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
+
+                _signRect = RectAndINI.ReadRectFromIni(oIni, "Regionsign");
+            }
+
+            using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmp.jpg"), FileMode.Open)) //File not block
+            {
+                var bmp = new Bitmap(fs);
+                var sourceimg = (Bitmap)bmp.Clone();
+
+                //Signature
+                pictureBoxSignature.Image = ImageComputation.ImageConvertions.MakeGrayscale3(new Bitmap(sourceimg).Clone(_signRect, PixelFormat.Format24bppRgb));
+            }
+        }
+
         
     }
 }

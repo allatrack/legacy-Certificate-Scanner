@@ -11,7 +11,7 @@ namespace CertificateScanner.ImageProcessing
 {
     public partial class ImageCorrection : Form
     {
-        public ImageCorrection()
+        public ImageCorrection(Image image, bool IsPhoto)
         {
             InitializeComponent();
         }
