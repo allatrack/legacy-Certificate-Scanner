@@ -129,16 +129,24 @@ namespace CertificateScanner
                 w = ptOriginalinit.X - e.X;
                 h1 = ptOriginalinit.Y - e.Y;
             }
-            h2 = (int)(w / coef);
-            if (h1 < h2)
+            if (coef == 1)
             {
                 rectCropArea.Width = w;
-                rectCropArea.Height = (int)(w / coef);
+                rectCropArea.Height = h1;
             }
             else
             {
-                rectCropArea.Height = h1;
-                rectCropArea.Width = (int)(h1 * coef);
+                h2 = (int)(w / coef);
+                if (h1 < h2)
+                {
+                    rectCropArea.Width = w;
+                    rectCropArea.Height = (int)(w / coef);
+                }
+                else
+                {
+                    rectCropArea.Height = h1;
+                    rectCropArea.Width = (int)(h1 * coef);
+                }
             }
         }
 
