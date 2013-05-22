@@ -111,14 +111,14 @@
     <EmbeddedResource Include="WaiteWindow\WaitWindowGUI.resx">
       <DependentUpon>WaitWindowGUI.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="app.config" />
+    <None Include="config\app.config" />
     <None Include="config\config.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="config\messages.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="NLog.config">
+    <None Include="config\NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Properties\Settings.settings">
