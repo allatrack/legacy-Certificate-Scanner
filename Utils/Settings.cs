@@ -15,10 +15,10 @@ namespace CertificateScanner.Utils
         private Settings()
         {
             //Load Constants
-            LoadSectionFromIni(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config/config.ini"), "Constant", ref constant);
+            LoadSectionFromIni(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config\\config.ini"), "Constant", ref constant);
 
             //Load Messages
-            LoadSectionFromIni(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config/messages.ini"), "Messages", ref messages);
+            LoadSectionFromIni(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config\\messages.ini"), "Messages", ref messages);
         }
 
         #endregion

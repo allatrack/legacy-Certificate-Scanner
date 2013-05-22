@@ -112,7 +112,7 @@
       <DependentUpon>WaitWindowGUI.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Config\config.ini">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Config\messages.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

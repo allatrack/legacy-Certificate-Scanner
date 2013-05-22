@@ -16,7 +16,7 @@ namespace CertificateScanner
     public partial class Main : Form
     {
         ADFScan _scanner;
-        private const string iniFileName = "Config/config.ini";
+        private const string iniFileName = "Config\\config.ini";
         ScanColor _color;
         int _dpi;
         string _path;
@@ -38,8 +38,18 @@ namespace CertificateScanner
 
         public Main()
         {
+            foreach (string configFiles in (new List<String> { 
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName), 
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config\\messages.ini") }))
+            {
+                if (!(File.Exists(configFiles)))
+                {
+                    IniCreator configCreator = new IniCreator(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
+                    if (!configCreator.CreateIni(CertificateScanner.Properties.Resources.config))
+                        MessageBox.Show(this.Messages("configCreateError"));
+                }
+            }
             InitializeComponent();
-
         }
 
         private void _scanner_ScanComplete(object sender, EventArgs e)
@@ -124,7 +134,7 @@ namespace CertificateScanner
                 _scanner.Scanning += _scanner_Scanning;
                 textBoxNumber.Text = "";
                 _scanner.ScanComplete += _scanner_ScanComplete;
-                _scanner.BeginScan(_color, _dpi, _deviceuuid, AppDomain.CurrentDomain.BaseDirectory + iniFileName);
+                _scanner.BeginScan(_color, _dpi, _deviceuuid, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
             }
             catch(Exception ex)
             {
@@ -143,10 +153,10 @@ namespace CertificateScanner
             if (fld.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 textBoxPath.Text = _path = fld.SelectedPath;
-                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
+                if (File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName)))
                 {
                     //Connect to Ini File "Config.ini" in current directory
-                    IniInterface oIni = new IniInterface(AppDomain.CurrentDomain.BaseDirectory + iniFileName);
+                    IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
                     oIni.WriteValue("Save", "path", textBoxPath.Text);
                     this.Info(String.Format("Change path to save files from \"{0}\", to \"{1}\"", _oldPath, _path));
                 }
@@ -155,7 +165,7 @@ namespace CertificateScanner
 
         private void fMain_Load(object sender, EventArgs e)
         {
-            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
+            if (File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName)))
             {
                 IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
                 string val = oIni.ReadValue("Scan", "color", "Color");
@@ -468,7 +478,9 @@ namespace CertificateScanner
                     var result = CertificateScanner.WaiteWindow.WaitWindow.Show(QRWorkerMethod, this.Messages("qrProgress"), new object[] { new Bitmap(qrimage).Clone(_barRect, System.Drawing.Imaging.PixelFormat.Format24bppRgb) });
                     return result.ToString();
                 }*/
+                checkBoxBarNumber.Checked = false;
                 var result = CertificateScanner.WaiteWindow.WaitWindow.Show(QRWorkerMethod, this.Messages("qrProgress"), new object[] { sourceimg.Clone(_barRect, System.Drawing.Imaging.PixelFormat.Format24bppRgb) });
+                checkBoxBarNumber.Checked = true;
                 return result.ToString();
             }
             catch(Exception ex)
