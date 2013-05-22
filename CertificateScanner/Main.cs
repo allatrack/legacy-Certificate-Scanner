@@ -70,6 +70,7 @@ namespace CertificateScanner
             }
 
             buttonSave.Enabled = buttonPhotoRect.Enabled = buttonSignatureRect.Enabled = buttonBarRect.Enabled = true;
+            button2.Enabled = button3.Enabled = true;
 
             using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmp.jpg"), FileMode.Open)) //File not block
             {
@@ -562,7 +563,7 @@ namespace CertificateScanner
 
         private void button2_Click(object sender, EventArgs e)
         {
-            using (CertificateScanner.ImageProcessing.ImageCorrection fCrop = new CertificateScanner.ImageProcessing.ImageCorrection(pictureBoxSignature.Image, false))
+            using (CertificateScanner.ImageProcessing.ImageCorrection fCrop = new CertificateScanner.ImageProcessing.ImageCorrection(pictureBoxSignature.Image, false, iniFileName))
                 fCrop.ShowDialog();
 
             if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
@@ -584,7 +585,7 @@ namespace CertificateScanner
 
         private void button3_Click(object sender, EventArgs e)
         {
-            using (CertificateScanner.ImageProcessing.ImageCorrection fCrop = new CertificateScanner.ImageProcessing.ImageCorrection(pictureBoxPhoto.Image, true))
+            using (CertificateScanner.ImageProcessing.ImageCorrection fCrop = new CertificateScanner.ImageProcessing.ImageCorrection(pictureBoxPhoto.Image, true, iniFileName))
                 fCrop.ShowDialog();
 
             if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
