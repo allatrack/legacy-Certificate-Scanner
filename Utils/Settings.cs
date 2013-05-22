@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 namespace CertificateScanner.Utils
 {
@@ -14,10 +15,10 @@ namespace CertificateScanner.Utils
         private Settings()
         {
             //Load Constants
-            LoadSectionFromIni(AppDomain.CurrentDomain.BaseDirectory + "config.ini", "Constant", ref constant);
+            LoadSectionFromIni(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config/config.ini"), "Constant", ref constant);
 
             //Load Messages
-            LoadSectionFromIni(AppDomain.CurrentDomain.BaseDirectory + "messages.ini", "Messages", ref messages);
+            LoadSectionFromIni(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config/messages.ini"), "Messages", ref messages);
         }
 
         #endregion
