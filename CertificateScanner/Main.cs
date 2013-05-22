@@ -16,7 +16,7 @@ namespace CertificateScanner
     public partial class Main : Form
     {
         ADFScan _scanner;
-        private const string iniFileName = "config.ini";
+        private const string iniFileName = "Config/config.ini";
         ScanColor _color;
         int _dpi;
         string _path;
@@ -46,7 +46,7 @@ namespace CertificateScanner
         {
             if (!checkBoxAuto.Checked)
             {
-                using (Crop fCrop = new Crop(Path.GetTempPath() + "tmp.jpg", iniFileName, "Regionphoto"))
+                using (Crop fCrop = new Crop(Path.Combine(Path.GetTempPath(), "tmp.jpg"), iniFileName, "Regionphoto"))
                     fCrop.ShowDialog();
                 if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
                 {
@@ -61,7 +61,7 @@ namespace CertificateScanner
 
             buttonSave.Enabled = buttonPhotoRect.Enabled = buttonSignatureRect.Enabled = buttonBarRect.Enabled = true;
 
-            using (var fs = new FileStream(Path.GetTempPath() + "tmp.jpg", FileMode.Open)) //File not block
+            using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmp.jpg"), FileMode.Open)) //File not block
             {
                 var bmp = new Bitmap(fs);
                 var sourceimg = (Bitmap)bmp.Clone();
@@ -90,16 +90,16 @@ namespace CertificateScanner
 
         private void _scanner_Scanning(object sender, WiaImageEventArgs e)
         {
-            if (File.Exists(Path.GetTempPath() + "tmp.jpg"))
+            if (File.Exists(Path.Combine(Path.GetTempPath(), "tmp.jpg")))
             {
                 //file exists, delete it
-                File.Delete(Path.GetTempPath() + "tmp.jpg");
+                File.Delete(Path.Combine(Path.GetTempPath(), "tmp.jpg"));
             }
 
             //stream safed save
             MemoryStream mss = new MemoryStream();
 
-            FileStream fs = new FileStream(Path.GetTempPath() + "tmp.jpg", FileMode.Create, FileAccess.ReadWrite);
+            FileStream fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmp.jpg"), FileMode.Create, FileAccess.ReadWrite);
 
             ImageCodecInfo jpegCodec = CertificateScanner.ImageComputation.ImageConvertions.GetEncoderInfo(@"image/jpeg");
             Encoder encoder = Encoder.Quality;
@@ -157,7 +157,7 @@ namespace CertificateScanner
         {
             if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
             {
-                IniInterface oIni = new IniInterface(AppDomain.CurrentDomain.BaseDirectory + iniFileName);
+                IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
                 string val = oIni.ReadValue("Scan", "color", "Color");
                 checkBoxAuto.Checked = (oIni.ReadValue("Scan", "auto", "true") == "true") ? true : false;
                 checkBoxBarNumber.Checked = (oIni.ReadValue("Scan", "barNumber", "true") == "true") ? true : false;
@@ -172,14 +172,14 @@ namespace CertificateScanner
                 
                 _path = oIni.ReadValue("Save", "path", AppDomain.CurrentDomain.BaseDirectory);
                 textBoxPath.Text = _path;
-                _photoPrefix = oIni.ReadValue("Save", "photoprefix", "Photo#");
-                _signPrefix = oIni.ReadValue("Save", "signprefix", "Sign#");
-                _photoJP2Prefix = oIni.ReadValue("Save", "photojp2prefix", "Photo2#");
-                _signJP2Prefix = oIni.ReadValue("Save", "signjp2prefix", "Sign2#");
-                _photoSufix = oIni.ReadValue("Save", "photosufix", "<F>");
-                _signSufix = oIni.ReadValue("Save", "signsufix", "<P>");
-                _photoJP2Sufix = oIni.ReadValue("Save", "photojp2sufix", "<F2>");
-                _signJP2Sufix = oIni.ReadValue("Save", "signjp2sufix", "<P2>");
+                _photoPrefix = oIni.ReadValue("Save", "photoprefix", "");
+                _signPrefix = oIni.ReadValue("Save", "signprefix", "");
+                _photoJP2Prefix = oIni.ReadValue("Save", "photojp2prefix", "");
+                _signJP2Prefix = oIni.ReadValue("Save", "signjp2prefix", "");
+                _photoSufix = oIni.ReadValue("Save", "photosufix", "F");
+                _signSufix = oIni.ReadValue("Save", "signsufix", "P");
+                _photoJP2Sufix = oIni.ReadValue("Save", "photojp2sufix", "F2");
+                _signJP2Sufix = oIni.ReadValue("Save", "signjp2sufix", "P2");
 
                 if (!int.TryParse(oIni.ReadValue("Save", "photomaxweight", "18000"), out _photoMaxWeight)) _photoMaxWeight = 18000;
                 if (!int.TryParse(oIni.ReadValue("Save", "signmaxweight", "8000"), out _signMaxWeight)) _signMaxWeight = 8000;
@@ -198,7 +198,7 @@ namespace CertificateScanner
             if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
             {
                 //Connect to Ini File "Config.ini" in current directory
-                IniInterface oIni = new IniInterface(AppDomain.CurrentDomain.BaseDirectory + iniFileName);
+                IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
                 oIni.WriteValue("Scan", "deviceuuid", "");
             }
             string _olddeviceuuid = _deviceuuid;
@@ -208,17 +208,17 @@ namespace CertificateScanner
 
         private void buttonSignatureRect_Click(object sender, EventArgs e)
         {
-            using (Crop fCrop = new Crop(Path.GetTempPath() + "tmp.jpg", iniFileName, "Regionsign"))
+            using (Crop fCrop = new Crop(Path.Combine(Path.GetTempPath(), "tmp.jpg"), iniFileName, "Regionsign"))
                 fCrop.ShowDialog();
 
             if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
             {
-                IniInterface oIni = new IniInterface(AppDomain.CurrentDomain.BaseDirectory + iniFileName);
+                IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
 
                 _signRect = RectAndINI.ReadRectFromIni(oIni, "Regionsign");
             }
 
-            using (var fs = new FileStream(Path.GetTempPath() + "tmp.jpg", FileMode.Open)) //File not block
+            using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmp.jpg"), FileMode.Open)) //File not block
             {
                 var bmp = new Bitmap(fs);
                 var sourceimg = (Bitmap)bmp.Clone();
@@ -230,17 +230,17 @@ namespace CertificateScanner
 
         private void buttonPhotoRect_Click(object sender, EventArgs e)
         {
-            using (Crop fCrop = new Crop(Path.GetTempPath() + "tmp.jpg", iniFileName, "Regionphoto"))
+            using (Crop fCrop = new Crop(Path.Combine(Path.GetTempPath(), "tmp.jpg"), iniFileName, "Regionphoto"))
                 fCrop.ShowDialog();
 
             if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
             {
-                IniInterface oIni = new IniInterface(AppDomain.CurrentDomain.BaseDirectory + iniFileName);
+                IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
 
                 _photoRect = RectAndINI.ReadRectFromIni(oIni, "Regionphoto");
             }
 
-            using (var fs = new FileStream(Path.GetTempPath() + "tmp.jpg", FileMode.Open)) //File not block
+            using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmp.jpg"), FileMode.Open)) //File not block
             {
                 var bmp = new Bitmap(fs);
                 var sourceimg = (Bitmap)bmp.Clone();
@@ -252,18 +252,18 @@ namespace CertificateScanner
 
         private void buttonBarRect_Click(object sender, EventArgs e)
         {
-            using (Crop fCrop = new Crop(Path.GetTempPath() + "tmp.jpg", iniFileName, "Regionbar"))
+            using (Crop fCrop = new Crop(Path.Combine(Path.GetTempPath(), "tmp.jpg"), iniFileName, "Regionbar"))
                 fCrop.ShowDialog();
 
             if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
             {
-                IniInterface oIni = new IniInterface(AppDomain.CurrentDomain.BaseDirectory + iniFileName);
+                IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
 
                 _barRect = RectAndINI.ReadRectFromIni(oIni, "Regionbar");
             }
 
             //BarCode
-            using (var fs = new FileStream(Path.GetTempPath() + "tmp.jpg", FileMode.Open)) //File not block
+            using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmp.jpg"), FileMode.Open)) //File not block
             {
                 var bmp = new Bitmap(fs);
                 var sourceimg = (Bitmap)bmp.Clone();
@@ -276,9 +276,9 @@ namespace CertificateScanner
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
-            File.Delete(Path.GetTempPath() + "tmp.jpg");
+            File.Delete(Path.Combine(Path.GetTempPath(), "tmp.jpg"));
 
-            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
+            if (File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName)))
             {
                 //Connect to Ini File "Config.ini" in current directory
                 IniInterface oIni = new IniInterface(AppDomain.CurrentDomain.BaseDirectory + iniFileName);
@@ -361,9 +361,9 @@ namespace CertificateScanner
                     var bmp = new Bitmap(fs);
                     double ratio;
                     ImageComputation.ImageConvertions.ScaleImage(bmp, (bmp.Width * _compressDPI) / _dpi, (bmp.Height * _compressDPI) / _dpi, out ratio).Save(
-                        Path.GetTempPath() + "tmpdpi.jpg", ImageFormat.Jpeg);
+                        Path.Combine(Path.GetTempPath(), "tmpdpi.jpg"), ImageFormat.Jpeg);
                 }
-                if (!LoadJpegToDib(Path.GetTempPath() + "tmpdpi.jpg", out dib))
+                if (!LoadJpegToDib(Path.Combine(Path.GetTempPath(), "tmpdpi.jpg"), out dib))
                     return;
                 dpiChanged = true;
             }
@@ -424,7 +424,7 @@ namespace CertificateScanner
             // Unload source bitmap
             FreeImage.UnloadEx(ref dib);
             if (dpiChanged)
-                File.Delete(Path.GetTempPath() + "tmpdpi.jpg");
+                File.Delete(Path.Combine(Path.GetTempPath(), "tmpdpi.jpg"));
         }
 
         private bool LoadJpegToDib(string input, out FIBITMAP dib)
@@ -443,7 +443,7 @@ namespace CertificateScanner
         {
             if ((buttonSave.Enabled) && (checkBoxBarNumber.Checked))
             {
-                using (var fs = new FileStream(Path.GetTempPath() + "tmp.jpg", FileMode.Open)) //File not block
+                using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmp.jpg"), FileMode.Open)) //File not block
                 {
                     var bmp = new Bitmap(fs);
                     var sourceimg = (Bitmap)bmp.Clone();

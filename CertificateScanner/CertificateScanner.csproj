@@ -111,14 +111,13 @@
     <EmbeddedResource Include="WaiteWindow\WaitWindowGUI.resx">
       <DependentUpon>WaitWindowGUI.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="config\app.config" />
-    <None Include="config\config.ini">
+    <None Include="Config\config.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="config\messages.ini">
+    <None Include="Config\messages.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="config\NLog.config">
+    <None Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Properties\Settings.settings">
@@ -132,28 +131,15 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ImageProcessing\AForge.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="ImageProcessing\AForge.Imaging.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="ImageProcessing\AForge.Math.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="ImageProcessing\FreeImage.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="ImageProcessing\BarcodeImaging.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="ImageProcessing\AForge.dll" />
+    <Content Include="ImageProcessing\AForge.Imaging.dll" />
+    <Content Include="ImageProcessing\AForge.Math.dll" />
+    <Content Include="ImageProcessing\FreeImage.dll" />
+    <Content Include="ImageProcessing\BarcodeImaging.dll" />
     <Content Include="ImageProcessing\FreeImageNET.dll">
       <CustomToolNamespace>CertificateScanner.ImageComputation</CustomToolNamespace>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="ImageProcessing\zxing.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="ImageProcessing\zxing.dll" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ADFScanner\Scanner.csproj">
