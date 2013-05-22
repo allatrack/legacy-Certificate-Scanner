@@ -69,47 +69,76 @@ namespace CertificateScanner
             ptLast.Y = -1;
             ptOriginal.X = -1;
             ptOriginal.Y = -1;
+
+            if (iniKey != "MainRegion")
+            {
+                SaveData();
+            }
             
         }
 
         private void InitRectCropArea(Point e, Point ptOriginalinit)
         {
-            // Draw new lines.
+            IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
+            var phWidht = Convert.ToInt32(oIni.ReadValue("Save", "photowidth"));
+            var phHeight = Convert.ToInt32(oIni.ReadValue("Save", "photoheight"));
+            var sgnWidht = Convert.ToInt32(oIni.ReadValue("Save", "signwidth"));
+            var sgnHeight = Convert.ToInt32(oIni.ReadValue("Save", "signheight"));
 
+            double phCoef = (double)phWidht / phHeight;
+            double sgnCoef = (double)sgnWidht / sgnHeight;
+            double coef = 1;
+            switch (iniKey.ToLower())
+            {
+                case "regionphoto": coef = phCoef; break;
+                case "regionsign": coef = sgnCoef; break;
+                default: coef = 1; break;
+            }
+
+            int w;
+            int h1;
+            int h2;
+            // Draw new lines.
             // e.X - rectCropArea.X;
             // normal
             if (e.X > ptOriginalinit.X && e.Y > ptOriginalinit.Y)
             {
                 rectCropArea.X = ptOriginalinit.X;
                 rectCropArea.Y = ptOriginalinit.Y;
-                rectCropArea.Width = e.X - ptOriginalinit.X;
-
-                // e.Y - rectCropArea.Height;
-                rectCropArea.Height = e.Y - ptOriginalinit.Y;
+                w = e.X - ptOriginalinit.X;
+                h1 = e.Y - ptOriginalinit.Y;
             }
             else if (e.X < ptOriginalinit.X && e.Y > ptOriginalinit.Y)
             {
-                rectCropArea.Width = ptOriginalinit.X - e.X;
-                rectCropArea.Height = e.Y - ptOriginalinit.Y;
                 rectCropArea.X = e.X;
                 rectCropArea.Y = ptOriginalinit.Y;
+                w = ptOriginalinit.X - e.X;
+                h1 = e.Y - ptOriginalinit.Y;
             }
             else if (e.X > ptOriginalinit.X && e.Y < ptOriginalinit.Y)
             {
-                rectCropArea.Width = e.X - ptOriginalinit.X;
-                rectCropArea.Height = ptOriginalinit.Y - e.Y;
-
                 rectCropArea.X = ptOriginalinit.X;
                 rectCropArea.Y = e.Y;
+                w = e.X - ptOriginalinit.X;
+                h1 = ptOriginalinit.Y - e.Y;
             }
             else
             {
-                rectCropArea.Width = ptOriginalinit.X - e.X;
-
-                // e.Y - rectCropArea.Height;
-                rectCropArea.Height = ptOriginalinit.Y - e.Y;
                 rectCropArea.X = e.X;
                 rectCropArea.Y = e.Y;
+                w = ptOriginalinit.X - e.X;
+                h1 = ptOriginalinit.Y - e.Y;
+            }
+            h2 = (int)(w / coef);
+            if (h1 < h2)
+            {
+                rectCropArea.Width = w;
+                rectCropArea.Height = (int)(w / coef);
+            }
+            else
+            {
+                rectCropArea.Height = h1;
+                rectCropArea.Width = (int)(h1 * coef);
             }
         }
 
@@ -219,26 +248,7 @@ namespace CertificateScanner
 
         private void BtnCrop_Click(object sender, EventArgs e)
         {
-            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
-            {
-                //Connect to Ini File "Config.ini" in current directory
-                IniInterface oIni = new IniInterface(AppDomain.CurrentDomain.BaseDirectory + iniFileName);
-
-                Rectangle area = mainRectangle;
-                if (iniKey == "MainRegion")
-                    area = new Rectangle(0, 0, SrcPicBox.Image.Width, SrcPicBox.Image.Height);
-                Rectangle res = RectAndINI.WriteRectToIni(oIni, iniKey, rectCropArea, ratio, SrcPicBox.Image.Width, SrcPicBox.Image.Height, area);
-
-                this.Info(
-                    String.Format("Rect: X=\"{0}\", Y=\"{1}\", Width=\"{2}\", Height=\"{3}\".",
-                                  res.X, res.Y, res.Width, res.Height),
-                    this.Messages("rectSaved"));
-            }
-            else
-                this.Warn(new FileNotFoundException(
-                                String.Format("Can`t save rect to ini file. RectCropArea: X=\"{0}\", Y=\"{1}\", Width=\"{2}\", Height=\"{3}\". Ratio={4}. SrcPicBox.Image.Width={5}. SrcPicBox.Image.Height={6}",
-                                    rectCropArea.X, rectCropArea.Y, rectCropArea.Width, rectCropArea.Height, ratio, SrcPicBox.Image.Width, SrcPicBox.Image.Height), AppDomain.CurrentDomain.BaseDirectory + iniFileName),
-                            this.Messages("iniWriteError"));
+            SaveData();
         }
 
         private void radioButtonClick(object sender, EventArgs e)
@@ -292,6 +302,30 @@ namespace CertificateScanner
                     (radioButtonMainRect.Checked) ? (int)(CropY * ratio) : (int)(CropY * ratio) - (int)(mainRectangle.Y * ratio)));
 
             SrcPicBox.Refresh();
+        }
+
+        void SaveData()
+        {
+            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
+            {
+                //Connect to Ini File "Config.ini" in current directory
+                IniInterface oIni = new IniInterface(AppDomain.CurrentDomain.BaseDirectory + iniFileName);
+
+                Rectangle area = mainRectangle;
+                if (iniKey == "MainRegion")
+                    area = new Rectangle(0, 0, SrcPicBox.Image.Width, SrcPicBox.Image.Height);
+                Rectangle res = RectAndINI.WriteRectToIni(oIni, iniKey, rectCropArea, ratio, SrcPicBox.Image.Width, SrcPicBox.Image.Height, area);
+
+                this.Info(
+                    String.Format("Rect: X=\"{0}\", Y=\"{1}\", Width=\"{2}\", Height=\"{3}\".",
+                                  res.X, res.Y, res.Width, res.Height),
+                    this.Messages("rectSaved"));
+            }
+            else
+                this.Warn(new FileNotFoundException(
+                                String.Format("Can`t save rect to ini file. RectCropArea: X=\"{0}\", Y=\"{1}\", Width=\"{2}\", Height=\"{3}\". Ratio={4}. SrcPicBox.Image.Width={5}. SrcPicBox.Image.Height={6}",
+                                    rectCropArea.X, rectCropArea.Y, rectCropArea.Width, rectCropArea.Height, ratio, SrcPicBox.Image.Width, SrcPicBox.Image.Height), AppDomain.CurrentDomain.BaseDirectory + iniFileName),
+                            this.Messages("iniWriteError"));
         }
     }
 }
