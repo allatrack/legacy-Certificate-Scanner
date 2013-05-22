@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.pictureBoxPhoto = new System.Windows.Forms.PictureBox();
             this.buttonBrowse = new System.Windows.Forms.Button();
             this.textBoxPath = new System.Windows.Forms.TextBox();
@@ -36,6 +37,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.textBoxNumber = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.button3 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
             this.checkBoxBarNumber = new System.Windows.Forms.CheckBox();
             this.button1 = new System.Windows.Forms.Button();
             this.buttonBarRect = new System.Windows.Forms.Button();
@@ -69,7 +72,7 @@
             // 
             // buttonBrowse
             // 
-            this.buttonBrowse.Location = new System.Drawing.Point(215, 254);
+            this.buttonBrowse.Location = new System.Drawing.Point(215, 348);
             this.buttonBrowse.Name = "buttonBrowse";
             this.buttonBrowse.Size = new System.Drawing.Size(24, 20);
             this.buttonBrowse.TabIndex = 4;
@@ -79,7 +82,7 @@
             // 
             // textBoxPath
             // 
-            this.textBoxPath.Location = new System.Drawing.Point(3, 254);
+            this.textBoxPath.Location = new System.Drawing.Point(5, 348);
             this.textBoxPath.Name = "textBoxPath";
             this.textBoxPath.ReadOnly = true;
             this.textBoxPath.Size = new System.Drawing.Size(204, 20);
@@ -88,7 +91,7 @@
             // 
             // buttonScan
             // 
-            this.buttonScan.Location = new System.Drawing.Point(84, 280);
+            this.buttonScan.Location = new System.Drawing.Point(86, 374);
             this.buttonScan.Name = "buttonScan";
             this.buttonScan.Size = new System.Drawing.Size(73, 24);
             this.buttonScan.TabIndex = 10;
@@ -136,6 +139,8 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.button3);
+            this.panel1.Controls.Add(this.button2);
             this.panel1.Controls.Add(this.checkBoxBarNumber);
             this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.buttonBarRect);
@@ -156,12 +161,32 @@
             this.panel1.Size = new System.Drawing.Size(244, 541);
             this.panel1.TabIndex = 4;
             // 
+            // button3
+            // 
+            this.button3.Enabled = false;
+            this.button3.Location = new System.Drawing.Point(3, 241);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(238, 23);
+            this.button3.TabIndex = 24;
+            this.button3.Text = "Редагувати фото";
+            this.button3.UseVisualStyleBackColor = true;
+            // 
+            // button2
+            // 
+            this.button2.Enabled = false;
+            this.button2.Location = new System.Drawing.Point(3, 214);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(238, 23);
+            this.button2.TabIndex = 23;
+            this.button2.Text = "Редагувати підпис";
+            this.button2.UseVisualStyleBackColor = true;
+            // 
             // checkBoxBarNumber
             // 
             this.checkBoxBarNumber.AutoSize = true;
             this.checkBoxBarNumber.Checked = true;
             this.checkBoxBarNumber.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxBarNumber.Location = new System.Drawing.Point(3, 200);
+            this.checkBoxBarNumber.Location = new System.Drawing.Point(3, 289);
             this.checkBoxBarNumber.Name = "checkBoxBarNumber";
             this.checkBoxBarNumber.Size = new System.Drawing.Size(207, 17);
             this.checkBoxBarNumber.TabIndex = 22;
@@ -171,7 +196,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(139, 351);
+            this.button1.Location = new System.Drawing.Point(135, 455);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 21;
@@ -194,7 +219,9 @@
             // checkBoxAuto
             // 
             this.checkBoxAuto.AutoSize = true;
-            this.checkBoxAuto.Location = new System.Drawing.Point(3, 218);
+            this.checkBoxAuto.Checked = true;
+            this.checkBoxAuto.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxAuto.Location = new System.Drawing.Point(3, 312);
             this.checkBoxAuto.Name = "checkBoxAuto";
             this.checkBoxAuto.Size = new System.Drawing.Size(154, 17);
             this.checkBoxAuto.TabIndex = 19;
@@ -215,7 +242,7 @@
             // buttonSave
             // 
             this.buttonSave.Enabled = false;
-            this.buttonSave.Location = new System.Drawing.Point(166, 280);
+            this.buttonSave.Location = new System.Drawing.Point(166, 374);
             this.buttonSave.Name = "buttonSave";
             this.buttonSave.Size = new System.Drawing.Size(73, 24);
             this.buttonSave.TabIndex = 15;
@@ -268,7 +295,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(0, 238);
+            this.label3.Location = new System.Drawing.Point(2, 332);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(177, 13);
             this.label3.TabIndex = 11;
@@ -301,6 +328,7 @@
             this.ClientSize = new System.Drawing.Size(794, 572);
             this.Controls.Add(this.tableLayoutPanel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -341,6 +369,8 @@
         private System.Windows.Forms.Button buttonBarRect;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.CheckBox checkBoxBarNumber;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button button2;
     }
 }
 
