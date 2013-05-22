@@ -299,7 +299,7 @@ namespace CertificateScanner
 
                 try
                 {
-                    log = successlog = "Saved in files:\n";
+                    log = successlog = "Saved in files:\n"; //
 
                     string signjpgpath = String.Format(@"{0}\{1}{2}{3}.jpg", _path, _signPrefix, textBoxNumber.Text, _signSufix);
                     string photojpgpath = String.Format(@"{0}\{1}{2}{3}.jpg", _path, _photoPrefix, textBoxNumber.Text, _photoSufix);
