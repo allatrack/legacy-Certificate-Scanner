@@ -70,7 +70,7 @@ namespace CertificateScanner
             }
 
             buttonSave.Enabled = buttonPhotoRect.Enabled = buttonSignatureRect.Enabled = buttonBarRect.Enabled = true;
-            button2.Enabled = button3.Enabled = true;
+            buttonEditSignature.Enabled = button3.Enabled = true;
 
             using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmp.jpg"), FileMode.Open)) //File not block
             {
@@ -288,6 +288,8 @@ namespace CertificateScanner
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
             File.Delete(Path.Combine(Path.GetTempPath(), "tmp.jpg"));
+            File.Delete(Path.Combine(Path.GetTempPath(), "tmpdpi.jpg"));
+            File.Delete(Path.Combine(Path.GetTempPath(), "tmpcorrection.jpg"));
 
             if (File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName)))
             {
@@ -497,30 +499,17 @@ namespace CertificateScanner
             {
                 var sourceimg = (Bitmap)e.Arguments[0];
 
-                AForge.Imaging.Filters.ContrastStretch filter = new AForge.Imaging.Filters.ContrastStretch();
+                ContrastStretch filter = new ContrastStretch();
                 sourceimg = filter.Apply(sourceimg);
                 sourceimg = filter.Apply(sourceimg);
                 sourceimg = filter.Apply(sourceimg);
 
-                AForge.Imaging.Filters.Median f1 = new AForge.Imaging.Filters.Median();
+                Median f1 = new Median();
                 sourceimg = f1.Apply(sourceimg);
                 sourceimg = f1.Apply(sourceimg);
                 sourceimg = f1.Apply(sourceimg);
 
-                //for (int j = 0; j < sourceimg.Height; j++)
-                //    for (int i = 0; i < sourceimg.Width; i++)
-                //    {
-                //        if (sourceimg.GetPixel(i , j).ToArgb() < -3355443)
-                //        {
-                //            sourceimg.SetPixel(i, j, Color.Black);
-                //        }
-                //        if (sourceimg.GetPixel(i , j).ToArgb() > -3355443)
-                //        {
-                //            sourceimg.SetPixel(i, j, Color.White);
-                //        }
-                //    }
-
-                AForge.Imaging.Filters.Blur filter2 = new AForge.Imaging.Filters.Blur();
+                Blur filter2 = new Blur();
                 sourceimg = filter2.Apply(sourceimg);
                 sourceimg = filter2.Apply(sourceimg);
 
@@ -561,50 +550,36 @@ namespace CertificateScanner
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void buttonEditSignature_Click(object sender, EventArgs e)
         {
-            using (CertificateScanner.ImageProcessing.ImageCorrection fCrop = new CertificateScanner.ImageProcessing.ImageCorrection(pictureBoxSignature.Image, false, iniFileName))
-                fCrop.ShowDialog();
-
-            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
+            using (CertificateScanner.ImageProcessing.ImageCorrection fCorrection = new CertificateScanner.ImageProcessing.ImageCorrection(pictureBoxSignature.Image, iniFileName, "sign"))
             {
-                IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
-
-                _signRect = RectAndINI.ReadRectFromIni(oIni, "Regionsign");
-            }
-
-            using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmp.jpg"), FileMode.Open)) //File not block
-            {
-                var bmp = new Bitmap(fs);
-                var sourceimg = (Bitmap)bmp.Clone();
-
-                //Signature
-                pictureBoxSignature.Image = ImageComputation.ImageConvertions.MakeGrayscale3(new Bitmap(sourceimg).Clone(_signRect, PixelFormat.Format24bppRgb));
+                if (fCorrection.ShowDialog() == DialogResult.OK)
+                {
+                    using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmpcorrection.jpg"), FileMode.Open)) //File not block
+                    {
+                        var bmp = new Bitmap(fs);
+                        //Signature
+                        pictureBoxSignature.Image = (Bitmap)bmp.Clone();
+                    }
+                }
             }
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private void buttonEditPhoto_Click(object sender, EventArgs e)
         {
-            using (CertificateScanner.ImageProcessing.ImageCorrection fCrop = new CertificateScanner.ImageProcessing.ImageCorrection(pictureBoxPhoto.Image, true, iniFileName))
-                fCrop.ShowDialog();
-
-            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
+            using (CertificateScanner.ImageProcessing.ImageCorrection fCorrection = new CertificateScanner.ImageProcessing.ImageCorrection(pictureBoxPhoto.Image, iniFileName, "photo"))
             {
-                IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
-
-                _signRect = RectAndINI.ReadRectFromIni(oIni, "Regionsign");
-            }
-
-            using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmp.jpg"), FileMode.Open)) //File not block
-            {
-                var bmp = new Bitmap(fs);
-                var sourceimg = (Bitmap)bmp.Clone();
-
-                //Signature
-                pictureBoxSignature.Image = ImageComputation.ImageConvertions.MakeGrayscale3(new Bitmap(sourceimg).Clone(_signRect, PixelFormat.Format24bppRgb));
+                if (fCorrection.ShowDialog() == DialogResult.OK)
+                {
+                    using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmpcorrection.jpg"), FileMode.Open)) //File not block
+                    {
+                        var bmp = new Bitmap(fs);
+                        pictureBoxPhoto.Image = (Bitmap)bmp.Clone();
+                    }
+                }
             }
         }
-
-        
+       
     }
 }

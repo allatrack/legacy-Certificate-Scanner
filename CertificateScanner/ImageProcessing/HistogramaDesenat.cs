@@ -22,6 +22,8 @@ namespace CertificateScanner.ImageComputation
 			// This call is required by the Windows.Forms Form Designer.
 			InitializeComponent();
 
+            myFont = this.Font;
+
 			// TODO: Add any initialization after the InitializeComponent call
 
 			this.Paint += new PaintEventHandler(HistogramaDesenat_Paint);
@@ -76,7 +78,7 @@ namespace CertificateScanner.ImageComputation
 						new PointF(myOffset + (i*myXUnit), this.Height - myOffset - myValues[i] * myYUnit));
 
 					//We plot the coresponding index for the maximum value.
-					if (myValues[i]==myMaxValue)
+					if ((myValues[i]==myMaxValue) && WriteValues)
 					{
 						SizeF mySize = g.MeasureString(i.ToString(),myFont);
 
@@ -87,12 +89,15 @@ namespace CertificateScanner.ImageComputation
 				}
 
 				//We draw the indexes for 0 and for the length of the array beeing plotted
-				g.DrawString("0",myFont, new SolidBrush(myColor),new PointF(myOffset,this.Height - myFont.Height),System.Drawing.StringFormat.GenericDefault);
-				g.DrawString((myValues.Length-1).ToString(),myFont, 
-					new SolidBrush(myColor),
-					new PointF(myOffset + (myValues.Length * myXUnit) - g.MeasureString((myValues.Length-1).ToString(),myFont).Width,
-					this.Height - myFont.Height),
-					System.Drawing.StringFormat.GenericDefault);
+                if (WriteValues)
+                {
+                    g.DrawString("0", myFont, new SolidBrush(myColor), new PointF(myOffset, this.Height - myFont.Height), System.Drawing.StringFormat.GenericDefault);
+                    g.DrawString((myValues.Length - 1).ToString(), myFont,
+                        new SolidBrush(myColor),
+                        new PointF(myOffset + (myValues.Length * myXUnit) - g.MeasureString((myValues.Length - 1).ToString(), myFont).Width,
+                        this.Height - myFont.Height),
+                        System.Drawing.StringFormat.GenericDefault);
+                }
 
 				//We draw a rectangle surrounding the control.
 				g.DrawRectangle(new System.Drawing.Pen(new SolidBrush(Color.Black),1),0,0,this.Width-1,this.Height-1);
@@ -125,6 +130,13 @@ namespace CertificateScanner.ImageComputation
 				return myOffset;
 			}
 		}
+
+        [Category("Histogram Options")]
+        public bool WriteValues
+        {
+            set;
+            get;
+        }
 
 		[Category("Histogram Options")]
 		[Description ("The color used within the control")]

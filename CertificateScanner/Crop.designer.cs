@@ -28,15 +28,16 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Crop));
             this.SrcPicBox = new System.Windows.Forms.PictureBox();
             this.BtnCrop = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.radioButtonMainRect = new System.Windows.Forms.RadioButton();
             this.radioButtonBar = new System.Windows.Forms.RadioButton();
             this.radioButtonPhoto = new System.Windows.Forms.RadioButton();
             this.radioButtonSignature = new System.Windows.Forms.RadioButton();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.radioButtonMainRect = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.SrcPicBox)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -96,6 +97,18 @@
             this.panel1.Size = new System.Drawing.Size(578, 24);
             this.panel1.TabIndex = 3;
             // 
+            // radioButtonMainRect
+            // 
+            this.radioButtonMainRect.AutoSize = true;
+            this.radioButtonMainRect.Location = new System.Drawing.Point(323, 4);
+            this.radioButtonMainRect.Name = "radioButtonMainRect";
+            this.radioButtonMainRect.Size = new System.Drawing.Size(159, 17);
+            this.radioButtonMainRect.TabIndex = 6;
+            this.radioButtonMainRect.TabStop = true;
+            this.radioButtonMainRect.Text = "Змінити осоновну область";
+            this.radioButtonMainRect.UseVisualStyleBackColor = true;
+            this.radioButtonMainRect.Click += new System.EventHandler(this.radioButtonClick);
+            // 
             // radioButtonBar
             // 
             this.radioButtonBar.AutoSize = true;
@@ -145,24 +158,13 @@
             this.panel2.Size = new System.Drawing.Size(578, 526);
             this.panel2.TabIndex = 4;
             // 
-            // radioButtonMainRect
-            // 
-            this.radioButtonMainRect.AutoSize = true;
-            this.radioButtonMainRect.Location = new System.Drawing.Point(323, 4);
-            this.radioButtonMainRect.Name = "radioButtonMainRect";
-            this.radioButtonMainRect.Size = new System.Drawing.Size(159, 17);
-            this.radioButtonMainRect.TabIndex = 6;
-            this.radioButtonMainRect.TabStop = true;
-            this.radioButtonMainRect.Text = "Змінити осоновну область";
-            this.radioButtonMainRect.UseVisualStyleBackColor = true;
-            this.radioButtonMainRect.Click += new System.EventHandler(this.radioButtonClick);
-            // 
             // Crop
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(584, 562);
             this.Controls.Add(this.tableLayoutPanel1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(600, 600);
             this.Name = "Crop";
