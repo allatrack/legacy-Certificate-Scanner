@@ -125,7 +125,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(244, 25);
             this.label1.TabIndex = 2;
-            this.label1.Text = "№ Заявки:";
+            this.label1.Text = "№ Заяви:";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // textBoxNumber
@@ -334,7 +334,7 @@
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Сканер анкети";
+            this.Text = "Сканер заяви";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Main_FormClosing);
             this.Load += new System.EventHandler(this.fMain_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPhoto)).EndInit();

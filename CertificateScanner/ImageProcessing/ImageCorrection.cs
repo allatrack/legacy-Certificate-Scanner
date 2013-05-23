@@ -84,6 +84,7 @@ namespace CertificateScanner.ImageProcessing
             pictureBoxOut.Image = _imageOut;
 
             histogram.DrawHistogram(GetHistogram((Bitmap)pictureBoxOut.Image));
+            rangeLevels.Value = new DevExpress.XtraEditors.Repository.TrackBarRange(0, 255);
         }
 
         private static long[] GetHistogram(Bitmap picture)

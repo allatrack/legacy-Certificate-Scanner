@@ -160,7 +160,9 @@
     <Content Include="ImageProcessing\AForge.dll" />
     <Content Include="ImageProcessing\AForge.Imaging.dll" />
     <Content Include="ImageProcessing\AForge.Math.dll" />
-    <Content Include="ImageProcessing\FreeImage.dll" />
+    <Content Include="FreeImage.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="ImageProcessing\BarcodeImaging.dll" />
     <Content Include="ImageProcessing\FreeImageNET.dll">
       <CustomToolNamespace>CertificateScanner.ImageComputation</CustomToolNamespace>

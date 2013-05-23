@@ -26,6 +26,10 @@ namespace CertificateScanner
         int _photoMaxWeight = 18000; //in bytes
         int _signMaxWeight = 8000; //in bytes
         int _compressDPI = 300;
+        int photowidth = 283;
+        int photoheight = 364;
+        int signwidth = 283;
+        int signheight = 94;
         string _deviceuuid;
         string _photoPrefix;
         string _signPrefix;
@@ -176,6 +180,7 @@ namespace CertificateScanner
                 textBoxNumber.ReadOnly =
                     checkBoxBarNumber.Checked;
 
+
                 _color = val == "Color" ? ScanColor.Color : (
                          val == "BlackWhite" ? ScanColor.BlackWhite :
                          ScanColor.Gray);
@@ -195,6 +200,11 @@ namespace CertificateScanner
                 if (!int.TryParse(oIni.ReadValue("Save", "photomaxweight", "18000"), out _photoMaxWeight)) _photoMaxWeight = 18000;
                 if (!int.TryParse(oIni.ReadValue("Save", "signmaxweight", "8000"), out _signMaxWeight)) _signMaxWeight = 8000;
                 if (!int.TryParse(oIni.ReadValue("Save", "compressdpi", "300"), out _compressDPI)) _compressDPI = 300;
+
+                if (!int.TryParse(oIni.ReadValue("Save", "photowidth", "283"), out photowidth)) photowidth = 283;
+                if (!int.TryParse(oIni.ReadValue("Save", "photoheight", "364"), out photoheight)) photoheight = 364;
+                if (!int.TryParse(oIni.ReadValue("Save", "signheight", "283"), out signheight)) signheight = 283;
+                if (!int.TryParse(oIni.ReadValue("Save", "signheight", "94"), out signheight)) signheight = 94;
 
                 _deviceuuid = oIni.ReadValue("Scan", "deviceuuid", AppDomain.CurrentDomain.BaseDirectory);
                 
@@ -314,10 +324,10 @@ namespace CertificateScanner
                 {
                     log = successlog = "Saved in files:\n"; //
 
-                    string signjpgpath = String.Format(@"{0}\{1}{2}{3}.jpg", _path, _signPrefix, textBoxNumber.Text, _signSufix);
-                    string photojpgpath = String.Format(@"{0}\{1}{2}{3}.jpg", _path, _photoPrefix, textBoxNumber.Text, _photoSufix);
-                    string signjp2path = String.Format(@"{0}\{1}{2}{3}.jp2", _path, _signJP2Prefix, textBoxNumber.Text, _signJP2Sufix);
-                    string photojp2path = String.Format(@"{0}\{1}{2}{3}.jp2", _path, _photoJP2Prefix, textBoxNumber.Text, _photoJP2Sufix);
+                    string signjpgpath = Path.Combine(_path, String.Format(@"{0}{1}{2}.jpg", _signPrefix, textBoxNumber.Text, _signSufix));
+                    string photojpgpath = Path.Combine(_path, String.Format(@"{0}{1}{2}.jpg", _photoPrefix, textBoxNumber.Text, _photoSufix));
+                    string signjp2path = Path.Combine(_path, String.Format(@"{0}{1}{2}.jp2", _signJP2Prefix, textBoxNumber.Text, _signJP2Sufix));
+                    string photojp2path = Path.Combine(_path, String.Format(@"{0}{1}{2}.jp2", _photoJP2Prefix, textBoxNumber.Text, _photoJP2Sufix));
                     
                     successlog = String.Format("Signature in jpg -- \"{0}\";\n", signjpgpath) +
                                  String.Format("Photo in jpg -- \"{0}\";\n", photojpgpath) +
@@ -342,10 +352,11 @@ namespace CertificateScanner
         {
             var log = (String)e.Arguments[0];
 
-            pictureBoxSignature.Image.Save((String)e.Arguments[1], ImageFormat.Jpeg);
+            double ratio = 1;
+            ImageComputation.ImageConvertions.ScaleImage(pictureBoxSignature.Image, signwidth, signheight, out ratio).Save((String)e.Arguments[1], ImageFormat.Jpeg);
             log += String.Format("Signature in jpg -- \"{0}\";\n", (String)e.Arguments[1]);
 
-            pictureBoxPhoto.Image.Save((String)e.Arguments[2], ImageFormat.Jpeg);
+            ImageComputation.ImageConvertions.ScaleImage(pictureBoxPhoto.Image, photowidth, photoheight, out ratio).Save((String)e.Arguments[2], ImageFormat.Jpeg);
             log += String.Format("Photo in jpg -- \"{0}\";\n", (String)e.Arguments[2]);
 
             SaveInJP2((String)e.Arguments[1], (String)e.Arguments[3], _signMaxWeight);

@@ -201,6 +201,15 @@ namespace CertificateScanner
             else
                 iniKey = "Regionphoto";
 
+            if (iniKey == "Regionphoto")
+                radioButtonSignature.Enabled = radioButtonBar.Enabled = false;
+
+            if (iniKey == "Regionsign")
+                radioButtonPhoto.Enabled = radioButtonBar.Enabled = false;
+
+            if (iniKey == "Regionbar")
+                radioButtonSignature.Enabled = radioButtonPhoto.Enabled = false;
+
            // InitRectCropArea(
            //  new Point(
            //    (radioButtonMainRect.Checked) ?
