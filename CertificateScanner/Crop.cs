@@ -32,7 +32,6 @@ namespace CertificateScanner
             filename = file;
             
             InitializeComponent();
-            this.Text += (inikey == "Regionphoto") ? " " + this.Messages("cropTitlePhoto") : ((inikey == "Regionbar") ? " " + this.Messages("cropTitleBar") : " " + this.Messages("cropTitleSign"));
             bHaveMouse = false;
         }
       
@@ -79,7 +78,7 @@ namespace CertificateScanner
 
         private void InitRectCropArea(Point e, Point ptOriginalinit)
         {
-            IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
+            /*IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
             var phWidht = Convert.ToInt32(oIni.ReadValue("Save", "photowidth"));
             var phHeight = Convert.ToInt32(oIni.ReadValue("Save", "photoheight"));
             var sgnWidht = Convert.ToInt32(oIni.ReadValue("Save", "signwidth"));
@@ -94,10 +93,10 @@ namespace CertificateScanner
                 case "regionsign": coef = sgnCoef; break;
                 default: coef = 1; break;
             }
-
+            */
             int w;
             int h1;
-            int h2;
+            //int h2;
             // Draw new lines.
             // e.X - rectCropArea.X;
             // normal
@@ -129,11 +128,11 @@ namespace CertificateScanner
                 w = ptOriginalinit.X - e.X;
                 h1 = ptOriginalinit.Y - e.Y;
             }
-            if (coef == 1)
-            {
+            /*if (coef == 1)
+            {*/
                 rectCropArea.Width = w;
                 rectCropArea.Height = h1;
-            }
+            /*}
             else
             {
                 h2 = (int)(w / coef);
@@ -147,7 +146,7 @@ namespace CertificateScanner
                     rectCropArea.Height = h1;
                     rectCropArea.Width = (int)(h1 * coef);
                 }
-            }
+            }*/
         }
 
         private void SrcPicBox_MouseMove(object sender, MouseEventArgs e)
@@ -172,6 +171,40 @@ namespace CertificateScanner
             int CropX = 0;
             int CropY = 0;
 
+            radioButtonPhoto.Visible = radioButtonSignature.Visible = radioButtonBar.Visible = true;
+
+            switch (iniKey)
+            {
+                case "Regionphoto":
+                    {
+                        this.Text += " " + this.Messages("cropTitlePhoto");
+                        radioButtonPhoto.Checked = true;
+                        radioButtonSignature.Enabled = radioButtonBar.Enabled = false;
+                    }
+                    break;
+                case "Regionsign":
+                    {
+                        this.Text += " " + this.Messages("cropTitleSign");
+                        radioButtonSignature.Checked = true;
+                        radioButtonPhoto.Enabled = radioButtonBar.Enabled = false;
+                    }
+                    break;
+                case "Regionbar":
+                    {
+                        this.Text += " " + this.Messages("cropTitleBar");
+                        radioButtonBar.Checked = true;
+                        radioButtonSignature.Enabled = radioButtonPhoto.Enabled = false;
+                    }
+                    break;
+                default:
+                    {
+                        radioButtonPhoto.Checked = true;
+                        radioButtonSignature.Enabled = radioButtonBar.Enabled = radioButtonPhoto.Enabled = true;
+                        iniKey = "Regionphoto";
+                    }
+                    break;
+            }
+
             mainRectangle = new Rectangle(0, 0, int.MaxValue, int.MaxValue);
 
             if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
@@ -191,40 +224,6 @@ namespace CertificateScanner
 
             LoadImage(mainRectangle, true);
 
-            if (iniKey != "")
-            {
-                radioButtonPhoto.Visible = radioButtonSignature.Visible = radioButtonBar.Visible = true;
-                radioButtonPhoto.Checked = (iniKey == "Regionphoto") ? true : false; //Regionbar
-                radioButtonSignature.Checked = (iniKey == "Regionsign") ? true : false;
-                radioButtonBar.Checked = (iniKey == "Regionbar") ? true : false;
-            }
-            else
-                iniKey = "Regionphoto";
-
-            if (iniKey == "Regionphoto")
-                radioButtonSignature.Enabled = radioButtonBar.Enabled = false;
-
-            if (iniKey == "Regionsign")
-                radioButtonPhoto.Enabled = radioButtonBar.Enabled = false;
-
-            if (iniKey == "Regionbar")
-                radioButtonSignature.Enabled = radioButtonPhoto.Enabled = false;
-
-           // InitRectCropArea(
-           //  new Point(
-           //    (radioButtonMainRect.Checked) ?
-           //  (int)((CropWidth + CropX) * ratio) :
-           //                    (int)((CropWidth + CropX - mainRectangle.X) * ratio),
-           //(radioButtonMainRect.Checked) ?
-           //(int)((CropHeight + CropY) * ratio) :
-           //(int)((CropHeight + CropY - mainRectangle.Y) * ratio)),
-           //new Point(
-           //  (radioButtonMainRect.Checked) ?
-           //                    (int)(CropX * ratio) :
-           //                  (int)((CropX - mainRectangle.X) * ratio),
-           //                (radioButtonMainRect.Checked) ?
-           //              (int)(CropY * ratio) :
-           //            (int)((CropY - mainRectangle.Y) * ratio)));
             InitRectCropArea(
                new Point((radioButtonMainRect.Checked) ? (int)((CropWidth + CropX) * ratio) : (int)((CropWidth + CropX) * ratio) - (int)(mainRectangle.X * ratio),
                    (radioButtonMainRect.Checked) ? (int)((CropHeight + CropY) * ratio) : (int)((CropHeight + CropY) * ratio) - (int)(mainRectangle.Y * ratio)),

@@ -40,6 +40,8 @@ namespace CertificateScanner
         string _photoJP2Sufix;
         string _signJP2Sufix;
 
+        bool fromQRScan = false;
+
         public Main()
         {
             foreach (string configFiles in (new List<String> { 
@@ -60,7 +62,7 @@ namespace CertificateScanner
         {
             if (!checkBoxAuto.Checked)
             {
-                using (Crop fCrop = new Crop(Path.Combine(Path.GetTempPath(), "tmp.jpg"), iniFileName, "Regionphoto"))
+                using (Crop fCrop = new Crop(Path.Combine(Path.GetTempPath(), "tmp.jpg"), iniFileName, ""))
                     fCrop.ShowDialog();
                 if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
                 {
@@ -465,7 +467,7 @@ namespace CertificateScanner
 
         private void checkBoxBarNumber_CheckedChanged(object sender, EventArgs e)
         {
-            if ((buttonSave.Enabled) && (checkBoxBarNumber.Checked))
+            if ((buttonSave.Enabled) && (checkBoxBarNumber.Checked) && (!fromQRScan))
             {
                 using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmp.jpg"), FileMode.Open)) //File not block
                 {
@@ -492,9 +494,11 @@ namespace CertificateScanner
                     var result = CertificateScanner.WaiteWindow.WaitWindow.Show(QRWorkerMethod, this.Messages("qrProgress"), new object[] { new Bitmap(qrimage).Clone(_barRect, System.Drawing.Imaging.PixelFormat.Format24bppRgb) });
                     return result.ToString();
                 }*/
+                fromQRScan = true;
                 checkBoxBarNumber.Checked = false;
                 var result = CertificateScanner.WaiteWindow.WaitWindow.Show(QRWorkerMethod, this.Messages("qrProgress"), new object[] { sourceimg.Clone(_barRect, System.Drawing.Imaging.PixelFormat.Format24bppRgb) });
                 checkBoxBarNumber.Checked = true;
+                fromQRScan = false;
                 return result.ToString();
             }
             catch(Exception ex)
