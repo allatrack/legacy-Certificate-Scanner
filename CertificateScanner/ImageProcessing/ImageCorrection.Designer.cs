@@ -36,12 +36,12 @@
             this.SrcPicBox = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.histogram = new CertificateScanner.ImageComputation.HistogramaDesenat();
             this.rangeLevels = new DevExpress.XtraEditors.RangeTrackBarControl();
             this.panel2 = new System.Windows.Forms.Panel();
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonOk = new System.Windows.Forms.Button();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.histogram = new CertificateScanner.ImageComputation.HistogramaDesenat();
             this.tableLayoutPanel1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxOut)).BeginInit();
@@ -49,10 +49,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.SrcPicBox)).BeginInit();
             this.tableLayoutPanel2.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.rangeLevels)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.rangeLevels.Properties)).BeginInit();
             this.panel2.SuspendLayout();
-            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -146,6 +146,29 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Корекція рівнів";
             // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.histogram);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel1.Location = new System.Drawing.Point(3, 16);
+            this.panel1.Name = "panel1";
+            this.panel1.Padding = new System.Windows.Forms.Padding(11, 0, 11, 0);
+            this.panel1.Size = new System.Drawing.Size(481, 124);
+            this.panel1.TabIndex = 1;
+            // 
+            // histogram
+            // 
+            this.histogram.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.histogram.DisplayColor = System.Drawing.Color.Black;
+            this.histogram.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.histogram.Font = new System.Drawing.Font("Angsana New", 1F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.histogram.Location = new System.Drawing.Point(11, 0);
+            this.histogram.Name = "histogram";
+            this.histogram.Offset = 1;
+            this.histogram.Size = new System.Drawing.Size(459, 124);
+            this.histogram.TabIndex = 0;
+            this.histogram.WriteValues = false;
+            // 
             // rangeLevels
             // 
             this.rangeLevels.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -155,6 +178,8 @@
             this.rangeLevels.Name = "rangeLevels";
             this.rangeLevels.Properties.LabelAppearance.Options.UseTextOptions = true;
             this.rangeLevels.Properties.LabelAppearance.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center;
+            this.rangeLevels.Properties.LookAndFeel.SkinName = "DevExpress Dark Style";
+            this.rangeLevels.Properties.LookAndFeel.UseDefaultLookAndFeel = false;
             this.rangeLevels.Properties.Maximum = 255;
             this.rangeLevels.Size = new System.Drawing.Size(481, 45);
             this.rangeLevels.TabIndex = 0;
@@ -192,29 +217,6 @@
             this.buttonOk.UseVisualStyleBackColor = true;
             this.buttonOk.Click += new System.EventHandler(this.buttonOk_Click);
             // 
-            // panel1
-            // 
-            this.panel1.Controls.Add(this.histogram);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(3, 16);
-            this.panel1.Name = "panel1";
-            this.panel1.Padding = new System.Windows.Forms.Padding(11, 0, 11, 0);
-            this.panel1.Size = new System.Drawing.Size(481, 124);
-            this.panel1.TabIndex = 1;
-            // 
-            // histogram
-            // 
-            this.histogram.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.histogram.DisplayColor = System.Drawing.Color.Black;
-            this.histogram.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.histogram.Font = new System.Drawing.Font("Angsana New", 1F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.histogram.Location = new System.Drawing.Point(11, 0);
-            this.histogram.Name = "histogram";
-            this.histogram.Offset = 1;
-            this.histogram.Size = new System.Drawing.Size(459, 124);
-            this.histogram.TabIndex = 0;
-            this.histogram.WriteValues = false;
-            // 
             // ImageCorrection
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -236,10 +238,10 @@
             this.tableLayoutPanel2.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
+            this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.rangeLevels.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.rangeLevels)).EndInit();
             this.panel2.ResumeLayout(false);
-            this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }

@@ -15,18 +15,16 @@ namespace CertificateScanner.ExceptionDecor
 
         private static void ErrorLog(ExceptionWrapper.ErrorTypes type, Exception ex, string message)
         {
-            if (!(ex is ExceptionWrapper))
-            {
-                throw new ExceptionWrapper()
-                {
-                    ex = ex,
-                    message = message,
-                    withMessage = String.IsNullOrWhiteSpace(message) ? false : true,
-                    type = type
-                };
-            }
-            else
+            if (ex is ExceptionWrapper)
                 throw ex;
+
+            throw new ExceptionWrapper()
+            {
+                ex = ex,
+                message = message,
+                withMessage = String.IsNullOrWhiteSpace(message) ? false : true,
+                type = type
+            };
         }
 
         #region Fatal

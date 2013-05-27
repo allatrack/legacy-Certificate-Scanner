@@ -10,8 +10,26 @@ using AForge.Imaging.Filters;
 
 namespace CertificateScanner.ImageProcessing
 {
+    enum RectangleStatus { Creating, Resizing, Moving };
+
     public partial class ImageCorrection : Form
     {
+        //
+        int _resizeArea = 5;
+        RectangleStatus _rectangleStatus;
+        Point _rectangleLocation;
+        Point _mouseClick;
+        Rectangle _prevRectangle;
+        // current line
+        //  1        2         3
+        //   .---------------.
+        //   |               |
+        // 8 |               | 4
+        //   |               |
+        //   .---------------. 
+        //  7        6         5
+        int _currentLine;
+        //
         Boolean bHaveMouse;
         Point ptOriginal = new Point();
         Point ptCurrent = new Point();
@@ -27,33 +45,51 @@ namespace CertificateScanner.ImageProcessing
         Image _image;
         Image _imageOut;
 
+
+
+
+
+
         public ImageCorrection(Image image, string inifilename, string inikey)
         {
             iniFileName = inifilename;
+            _rectangleStatus = RectangleStatus.Creating;
             iniKey = inikey;
-
             _image = image;
-            
             InitializeComponent();
             bHaveMouse = false;
         }
-      
+
         private void SrcPicBox_MouseDown(object sender, MouseEventArgs e)
         {
             // Make a note that we "have the mouse".
             bHaveMouse = true;
 
-            // Store the "starting point" for this rubber-band rectangle.
-            ptOriginal.X = e.X;
-            ptOriginal.Y = e.Y;
-
-            // Special value lets us know that no previous
-            // rectangle needs to be erased.
-
-            ptLast.X = -1;
-            ptLast.Y = -1;
-            
-            rectCropArea = new Rectangle(new Point(e.X, e.Y), new Size());
+            if (rectCropArea != null)
+            {
+                if (_rectangleStatus == RectangleStatus.Moving)
+                {
+                    _rectangleLocation = rectCropArea.Location;
+                    _mouseClick = new Point(e.X, e.Y);
+                }
+                else if (_rectangleStatus == RectangleStatus.Resizing)
+                {
+                    _mouseClick = new Point(e.X, e.Y);
+                    _prevRectangle = new Rectangle(rectCropArea.X, rectCropArea.Y, rectCropArea.Width, rectCropArea.Height);
+                }
+                else
+                {
+                    _rectangleStatus = RectangleStatus.Creating;
+                    // Store the "starting point" for this rubber-band rectangle.
+                    ptOriginal.X = e.X;
+                    ptOriginal.Y = e.Y;
+                    // Special value lets us know that no previous
+                    // rectangle needs to be erased.
+                    ptLast.X = -1;
+                    ptLast.Y = -1;
+                    rectCropArea = new Rectangle(new Point(e.X, e.Y), new Size());
+                }
+            }
         }
 
         private void SrcPicBox_MouseUp(object sender, MouseEventArgs e)
@@ -67,9 +103,9 @@ namespace CertificateScanner.ImageProcessing
             ptOriginal.X = -1;
             ptOriginal.Y = -1;
 
-            Rectangle realRectCropArea = new Rectangle((int)((rectCropArea.X - imageX) / ratio), 
-                                                       (int)((rectCropArea.Y - imageY) / ratio), 
-                                                       (int)(rectCropArea.Width / ratio), 
+            Rectangle realRectCropArea = new Rectangle((int)((rectCropArea.X - imageX) / ratio),
+                                                       (int)((rectCropArea.Y - imageY) / ratio),
+                                                       (int)(rectCropArea.Width / ratio),
                                                        (int)(rectCropArea.Height / ratio));
 
             if (realRectCropArea.X + realRectCropArea.Width > _image.Width)
@@ -112,9 +148,6 @@ namespace CertificateScanner.ImageProcessing
         {
             int w;
             int h1;
-            // Draw new lines.
-            // e.X - rectCropArea.X;
-            // normal
             if (e.X > ptOriginalinit.X && e.Y > ptOriginalinit.Y)
             {
                 rectCropArea.X = ptOriginalinit.X;
@@ -197,10 +230,140 @@ namespace CertificateScanner.ImageProcessing
             if (bHaveMouse)
             {
                 // Update last point.
-                ptLast = ptCurrent;
-                InitRectCropArea(new Point(e.X, e.Y), ptOriginal);
-                
+                if (_rectangleStatus == RectangleStatus.Moving)
+                {
+                    MoveRect(e.Location);
+                }
+                else if (_rectangleStatus == RectangleStatus.Resizing)
+                {
+                    ResizeRect(e.Location);
+                }
+                else
+                {
+                    ptLast = ptCurrent;
+                    InitRectCropArea(new Point(e.X, e.Y), ptOriginal);
+                }
                 SrcPicBox.Refresh();
+            }
+            else
+            {
+                if (rectCropArea != null)
+                {
+                    if
+                      (
+                       (e.X >= (rectCropArea.X + _resizeArea)) &&
+                       (e.X <= (rectCropArea.X + rectCropArea.Width - _resizeArea)) &&
+                       (e.Y >= (rectCropArea.Y + _resizeArea)) &&
+                       (e.Y <= (rectCropArea.Y + rectCropArea.Height - _resizeArea))
+                      )
+                    {
+                        _rectangleStatus = RectangleStatus.Moving;
+                        this.Cursor = Cursors.Hand;
+                        _currentLine = 0;
+                    }
+                    else if
+                      (
+                       (e.X >= (rectCropArea.X + _resizeArea)) &&
+                       (e.Y >= (rectCropArea.Y - _resizeArea)) &&
+                       (e.X <= (rectCropArea.X + rectCropArea.Width - _resizeArea)) &&
+                       (e.Y <= (rectCropArea.Y + _resizeArea))
+                      )
+                    {
+                        _rectangleStatus = RectangleStatus.Resizing;
+                        this.Cursor = Cursors.SizeNS;
+                        _currentLine = 2;
+                    }
+                    else if
+                      (
+                       (e.X >= (rectCropArea.X - _resizeArea)) &&
+                       (e.Y >= (rectCropArea.Y + _resizeArea)) &&
+                       (e.X <= (rectCropArea.X + _resizeArea)) &&
+                       (e.Y <= (rectCropArea.Y + rectCropArea.Height - _resizeArea))
+                      )
+                    {
+                        _rectangleStatus = RectangleStatus.Resizing;
+                        this.Cursor = Cursors.SizeWE;
+                        _currentLine = 8;
+                    }
+                    else if
+                      (
+                       (e.X >= (rectCropArea.X + _resizeArea)) &&
+                       (e.Y >= (rectCropArea.Y + rectCropArea.Height - _resizeArea)) &&
+                       (e.X <= (rectCropArea.X + rectCropArea.Width - _resizeArea)) &&
+                       (e.Y <= (rectCropArea.Y + rectCropArea.Height + _resizeArea))
+                      )
+                    {
+                        _rectangleStatus = RectangleStatus.Resizing;
+                        this.Cursor = Cursors.SizeNS;
+                        _currentLine = 6;
+                    }
+                    else if
+                      (
+                       (e.X >= (rectCropArea.X + rectCropArea.Width - _resizeArea)) &&
+                       (e.Y >= (rectCropArea.Y + _resizeArea)) &&
+                       (e.X <= (rectCropArea.X + rectCropArea.Width + _resizeArea)) &&
+                       (e.Y <= (rectCropArea.Y + rectCropArea.Height - _resizeArea))
+                      )
+                    {
+                        _rectangleStatus = RectangleStatus.Resizing;
+                        this.Cursor = Cursors.SizeWE;
+                        _currentLine = 4;
+                    }
+                    else if
+                      (
+                       (e.X >= (rectCropArea.X - _resizeArea)) &&
+                       (e.Y >= (rectCropArea.Y - _resizeArea)) &&
+                       (e.X <= (rectCropArea.X + _resizeArea)) &&
+                       (e.Y <= (rectCropArea.Y + _resizeArea))
+                      )
+                    {
+                        _rectangleStatus = RectangleStatus.Resizing;
+                        this.Cursor = Cursors.SizeNWSE;
+                        _currentLine = 1;
+                    }
+                    else if
+                      (
+                       (e.X >= (rectCropArea.X + rectCropArea.Width - _resizeArea)) &&
+                       (e.Y >= (rectCropArea.Y - _resizeArea)) &&
+                       (e.X <= (rectCropArea.X + rectCropArea.Width + _resizeArea)) &&
+                       (e.Y <= (rectCropArea.Y + _resizeArea))
+                      )
+                    {
+                        _rectangleStatus = RectangleStatus.Resizing;
+                        this.Cursor = Cursors.SizeNESW;
+                        _currentLine = 3;
+                    }
+                    else if
+                      (
+                       (e.X >= (rectCropArea.X + rectCropArea.Width - _resizeArea)) &&
+                       (e.Y >= (rectCropArea.Y + rectCropArea.Height - _resizeArea)) &&
+                       (e.X <= (rectCropArea.X + rectCropArea.Width + _resizeArea)) &&
+                       (e.Y <= (rectCropArea.Y + rectCropArea.Height + _resizeArea))
+                      )
+                    {
+                        _rectangleStatus = RectangleStatus.Resizing;
+                        this.Cursor = Cursors.SizeNWSE;
+                        _currentLine = 5;
+                    }
+                    else if
+                      (
+                       (e.X >= (rectCropArea.X - _resizeArea)) &&
+                       (e.Y >= (rectCropArea.Y + rectCropArea.Height - _resizeArea)) &&
+                       (e.X <= (rectCropArea.X + _resizeArea)) &&
+                       (e.Y <= (rectCropArea.Y + rectCropArea.Height + _resizeArea))
+                      )
+                    {
+                        _rectangleStatus = RectangleStatus.Resizing;
+                        this.Cursor = Cursors.SizeNESW;
+                        _currentLine = 7;
+                    }
+                    else
+                    {
+                        _rectangleStatus = RectangleStatus.Creating;
+                        this.Cursor = Cursors.Default;
+                        _currentLine = 0;
+                    }
+                }
             }
         }
 
@@ -215,7 +378,7 @@ namespace CertificateScanner.ImageProcessing
             ratio = Math.Min(ratioX, ratioY);
 
             // Compute the offset of the image to center it in the picture box
-            var scaledWidth  = _image.Width * ratio;
+            var scaledWidth = _image.Width * ratio;
             var scaledHeight = _image.Height * ratio;
             imageX = (int)((SrcPicBox.Width - scaledWidth) / 2);
             imageY = (int)((SrcPicBox.Height - scaledHeight) / 2);
@@ -245,10 +408,12 @@ namespace CertificateScanner.ImageProcessing
         private void rangeLevels_EditValueChanged(object sender, EventArgs e)
         {
             // create filter
-            LevelsLinear filter = new LevelsLinear() { /* set ranges*/
-                InRed = new AForge.IntRange(rangeLevels.Value.Minimum, rangeLevels.Value.Maximum), 
-                InGreen = new AForge.IntRange(rangeLevels.Value.Minimum, rangeLevels.Value.Maximum), 
-                InBlue = new AForge.IntRange(rangeLevels.Value.Minimum, rangeLevels.Value.Maximum) };
+            LevelsLinear filter = new LevelsLinear()
+            { /* set ranges*/
+                InRed = new AForge.IntRange(rangeLevels.Value.Minimum, rangeLevels.Value.Maximum),
+                InGreen = new AForge.IntRange(rangeLevels.Value.Minimum, rangeLevels.Value.Maximum),
+                InBlue = new AForge.IntRange(rangeLevels.Value.Minimum, rangeLevels.Value.Maximum)
+            };
             // apply the filter
             using (Bitmap filteredImage = (Bitmap)_imageOut.Clone())
             {
@@ -280,5 +445,74 @@ namespace CertificateScanner.ImageProcessing
             }
         }
 
+        private void MoveRect(Point mpoint)
+        {
+            var x = _mouseClick.X - mpoint.X;
+            var y = _mouseClick.Y - mpoint.Y;
+            var rX = _rectangleLocation.X - x;
+            var rY = _rectangleLocation.Y - y;
+            var w = rectCropArea.Width + rX;
+            var h = rectCropArea.Height + rY;
+            if (w > SrcPicBox.Width || h > SrcPicBox.Height || rX < 0 || rY < 0)
+            {
+                return;
+            }
+            else
+            {
+                rectCropArea.Location = new Point(rX, rY);
+            }
+            //if(end.X
+
+        }
+        private void ResizeRect(Point mpoint)
+        {
+            int w;
+            int h;
+            switch (_currentLine)
+            {
+                case 1:
+                    w = Math.Abs(_prevRectangle.Width + _mouseClick.X - mpoint.X);
+                    h = Math.Abs(_prevRectangle.Height + _mouseClick.Y - mpoint.Y);
+                    rectCropArea.X = mpoint.X;
+                    rectCropArea.Y = mpoint.Y;
+                    rectCropArea = NormaliseRect(w, h, rectCropArea, true);
+                    break;
+                case 2:
+                    h = _prevRectangle.Height + _mouseClick.Y - mpoint.Y;
+                    rectCropArea.Y = mpoint.Y;
+                    rectCropArea = NormaliseRect(0, h, rectCropArea, true);
+                    break;
+                case 3:
+                    w = _prevRectangle.Width + mpoint.X - _mouseClick.X;
+                    h = _prevRectangle.Height + _mouseClick.Y - mpoint.Y;
+                    rectCropArea.Y = mpoint.Y;
+                    rectCropArea = NormaliseRect(w, h, rectCropArea, true);
+                    break;
+                case 4:
+                    w = _prevRectangle.Width - _mouseClick.X + mpoint.X;
+                    rectCropArea = NormaliseRect(w, 0, rectCropArea, true);
+                    break;
+                case 5:
+                    w = _prevRectangle.Width - _mouseClick.X + mpoint.X;
+                    h = _prevRectangle.Height - _mouseClick.Y + mpoint.Y;
+                    rectCropArea = NormaliseRect(w, h, rectCropArea, true);
+                    break;
+                case 6:
+                    h = _prevRectangle.Height - _mouseClick.Y + mpoint.Y;
+                    rectCropArea = NormaliseRect(0, h, rectCropArea, true);
+                    break;
+                case 7:
+                    w = _prevRectangle.Width + _mouseClick.X - mpoint.X;
+                    h = _prevRectangle.Height - _mouseClick.Y + mpoint.Y;
+                    rectCropArea.X = mpoint.X;
+                    rectCropArea = NormaliseRect(w, h, rectCropArea, true);
+                    break;
+                case 8:
+                    w = _prevRectangle.Width + _mouseClick.X - mpoint.X;
+                    rectCropArea.X = mpoint.X;
+                    rectCropArea = NormaliseRect(w, 0, rectCropArea, true);
+                    break;
+            }
+        }
     }
 }

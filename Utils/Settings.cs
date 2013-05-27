@@ -48,30 +48,24 @@ namespace CertificateScanner.Utils
         private static void LoadSectionFromIni(string path, string section, ref Dictionary<string, string> variable)
         {
             //Check for exist file Config.ini
-            if (System.IO.File.Exists(path))
+            if (!File.Exists(path))
+                return;
+
+            //Connect to Ini File "settings.ini" in current directory
+            Ini.IniInterface oIni = new Ini.IniInterface(path);
+            Array itemNames = Array.CreateInstance(typeof(string), 0);
+            oIni.ReadValues(section, ref itemNames);
+            foreach (string itemName in itemNames)
             {
-                //Connect to Ini File "settings.ini" in current directory
-                Ini.IniInterface oIni = new Ini.IniInterface(path);
-                Array itemNames = Array.CreateInstance(typeof(string), 0);
-                oIni.ReadValues(section, ref itemNames);
-                foreach (string itemName in itemNames)
+                try
                 {
-                    try
-                    {
-                        variable.Add(itemName, oIni.ReadValue(section, itemName));
-                    }
-                    catch  // I can`t do anything because this event fire before core
-                    {
-                        
-                    }
+                    variable.Add(itemName, oIni.ReadValue(section, itemName));
+                }
+                catch(Exception ex)
+                {
+                    ExceptionDecor.ExceptionDecorator.Warn(new Exception(String.Format("can`t  add variable {0}", itemName), ex)); 
                 }
             }
-            else
-            {
-                //proposition to restore section.ini
-                //TODO Сделать восстановление ini файлов из бекапа
-            }
-
         }
 
         #endregion

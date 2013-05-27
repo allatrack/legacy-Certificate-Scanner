@@ -78,9 +78,9 @@ namespace CertificateScanner.Utils
         /// <param name="plainText">input string</param>
         public string encryptStringToString_AES(string plaintext)
         {
-            string tempPsw = ""; //Encrypt after first step
+            string tempPsw = String.Empty; //Encrypt after first step
 
-            string result = ""; //array of byte
+            string result = String.Empty; //array of byte
 
             //First Step
 
@@ -101,7 +101,7 @@ namespace CertificateScanner.Utils
             }
 
 
-            result = "";
+            result = String.Empty;
 
             //Second Step
             try
@@ -126,7 +126,7 @@ namespace CertificateScanner.Utils
         /// <param name="cipherText">input string</param>
         public string decryptStringToString_AES(string cipherText)
         {
-            string result = "";
+            string result = String.Empty;
 
             byte[] encrypted = null;
 

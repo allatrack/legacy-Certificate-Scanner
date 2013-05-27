@@ -24,21 +24,16 @@ namespace CertificateScanner.ADFScanner
             {
                 CommonDialog class1 = new CommonDialog();
                 Device d = class1.ShowSelectDevice(WiaDeviceType.UnspecifiedDeviceType, true, false);
-                if (d != null)
+                if (d == null)
+                    return; //no scanner chosen
+
+                deviceid = d.DeviceID;
+                if (File.Exists(iniPath))
                 {
-                    deviceid = d.DeviceID;
-                    if (File.Exists(iniPath))
-                    {
-                        //Connect to Ini File "Config.ini" in current directory
-                        IniInterface oIni = new IniInterface(iniPath);
-                        oIni.WriteValue("Scan", "deviceuuid", deviceid);
-                        CertificateScanner.ExceptionDecor.ExceptionDecorator.Info(String.Format("New scanner with uuid=\"{0}\" added", deviceid));
-                    }
-                }
-                else
-                {
-                    //no scanner chosen
-                    return;
+                    //Connect to Ini File "Config.ini" in current directory
+                    IniInterface oIni = new IniInterface(iniPath);
+                    oIni.WriteValue("Scan", "deviceuuid", deviceid);
+                    CertificateScanner.ExceptionDecor.ExceptionDecorator.Info(String.Format("New scanner with uuid=\"{0}\" added", deviceid));
                 }
             }
             else
@@ -88,9 +83,7 @@ namespace CertificateScanner.ADFScanner
                         ret = (Bitmap)bmp.Clone();
                         EventHandler<WiaImageEventArgs> temp = Scanning;
                         if (temp != null)
-                        {
                             temp(this, new WiaImageEventArgs(ret));
-                        }
                     }
                     numPages++;
                     img = null;
@@ -120,18 +113,14 @@ namespace CertificateScanner.ADFScanner
                     {
                         //check for document feeder
                         if ((Convert.ToUInt32(documentHandlingSelect.get_Value()) & WIA_DPS_DOCUMENT_HANDLING_SELECT.FEEDER) != 0)
-                        {
                             hasMorePages = ((Convert.ToUInt32(documentHandlingStatus.get_Value()) & WIA_DPS_DOCUMENT_HANDLING_STATUS.FEED_READY) != 0);
-                        }
                     }
                     x++;
                 }
             }
             EventHandler tempCom = ScanComplete;
             if (tempCom != null)
-            {
                 tempCom(this, EventArgs.Empty);
-            }
         }
         //internal classes
         #region InternalClasses

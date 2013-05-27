@@ -322,26 +322,28 @@ namespace CertificateScanner
 
         void SaveData()
         {
-            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
+            if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
             {
-                //Connect to Ini File "Config.ini" in current directory
-                IniInterface oIni = new IniInterface(AppDomain.CurrentDomain.BaseDirectory + iniFileName);
-
-                Rectangle area = mainRectangle;
-                if (iniKey == "MainRegion")
-                    area = new Rectangle(0, 0, SrcPicBox.Image.Width, SrcPicBox.Image.Height);
-                Rectangle res = RectAndINI.WriteRectToIni(oIni, iniKey, rectCropArea, ratio, SrcPicBox.Image.Width, SrcPicBox.Image.Height, area);
-
-                this.Info(
-                    String.Format("Rect: X=\"{0}\", Y=\"{1}\", Width=\"{2}\", Height=\"{3}\".",
-                                  res.X, res.Y, res.Width, res.Height),
-                    this.Messages("rectSaved"));
-            }
-            else
                 this.Warn(new FileNotFoundException(
                                 String.Format("Can`t save rect to ini file. RectCropArea: X=\"{0}\", Y=\"{1}\", Width=\"{2}\", Height=\"{3}\". Ratio={4}. SrcPicBox.Image.Width={5}. SrcPicBox.Image.Height={6}",
                                     rectCropArea.X, rectCropArea.Y, rectCropArea.Width, rectCropArea.Height, ratio, SrcPicBox.Image.Width, SrcPicBox.Image.Height), AppDomain.CurrentDomain.BaseDirectory + iniFileName),
                             this.Messages("iniWriteError"));
+                return;
+            }
+
+            //Connect to Ini File "Config.ini" in current directory
+            IniInterface oIni = new IniInterface(AppDomain.CurrentDomain.BaseDirectory + iniFileName);
+
+            Rectangle area = mainRectangle;
+            if (iniKey == "MainRegion")
+                area = new Rectangle(0, 0, SrcPicBox.Image.Width, SrcPicBox.Image.Height);
+            Rectangle res = RectAndINI.WriteRectToIni(oIni, iniKey, rectCropArea, ratio, SrcPicBox.Image.Width, SrcPicBox.Image.Height, area);
+
+            this.Info(
+                String.Format("Rect: X=\"{0}\", Y=\"{1}\", Width=\"{2}\", Height=\"{3}\".",
+                                res.X, res.Y, res.Width, res.Height),
+                this.Messages("rectSaved"));
+                
         }
     }
 }

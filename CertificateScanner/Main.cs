@@ -40,21 +40,30 @@ namespace CertificateScanner
         string _photoJP2Sufix;
         string _signJP2Sufix;
 
-        bool fromQRScan = false;
+        bool fromQRScan;
 
         public Main()
         {
-            foreach (string configFiles in (new List<String> { 
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName), 
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config\\messages.ini") }))
+            bool reCreated = false;
+
+            foreach (KeyValuePair<String, String> configFile in (new Dictionary<String, String> { 
+                {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName), CertificateScanner.Properties.Resources.config}, 
+                {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config\\messages.ini"), CertificateScanner.Properties.Resources.messages},
+                {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "NLog.config"), CertificateScanner.Properties.Resources.NLog}
+            }))
             {
-                if (!(File.Exists(configFiles)))
+                if (!(File.Exists(configFile.Key)))
                 {
-                    IniCreator configCreator = new IniCreator(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
-                    if (!configCreator.CreateIni(CertificateScanner.Properties.Resources.config))
+                    IniCreator configCreator = new IniCreator(configFile.Key);
+                    if (!configCreator.CreateIni(configFile.Value))
                         MessageBox.Show(this.Messages("configCreateError"));
+                    reCreated = true;
                 }
             }
+
+            if (reCreated)
+                this.Info("!!!!!!Configuration has been restored!!!!!!!", this.Messages("Конфігураційні файли відновлено після пошкоджень."));
+
             InitializeComponent();
         }
 
@@ -62,7 +71,7 @@ namespace CertificateScanner
         {
             if (!checkBoxAuto.Checked)
             {
-                using (Crop fCrop = new Crop(Path.Combine(Path.GetTempPath(), "tmp.jpg"), iniFileName, ""))
+                using (Crop fCrop = new Crop(Path.Combine(Path.GetTempPath(), "tmp.jpg"), iniFileName, String.Empty))
                     fCrop.ShowDialog();
                 if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + iniFileName))
                 {
@@ -92,7 +101,7 @@ namespace CertificateScanner
                 this.Info("Successfuly get Signature");
 
                 //QRCode
-                string numb = "";
+                string numb = String.Empty;
                 if (checkBoxBarNumber.Checked)
                 {
                     numb = ScanQRCode(_barRect, sourceimg);
@@ -139,7 +148,7 @@ namespace CertificateScanner
             {
                 _scanner = new ADFScan();
                 _scanner.Scanning += _scanner_Scanning;
-                textBoxNumber.Text = "";
+                textBoxNumber.Text = String.Empty;
                 _scanner.ScanComplete += _scanner_ScanComplete;
                 _scanner.BeginScan(_color, _dpi, _deviceuuid, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
             }
@@ -190,10 +199,10 @@ namespace CertificateScanner
                 
                 _path = oIni.ReadValue("Save", "path", AppDomain.CurrentDomain.BaseDirectory);
                 textBoxPath.Text = _path;
-                _photoPrefix = oIni.ReadValue("Save", "photoprefix", "");
-                _signPrefix = oIni.ReadValue("Save", "signprefix", "");
-                _photoJP2Prefix = oIni.ReadValue("Save", "photojp2prefix", "");
-                _signJP2Prefix = oIni.ReadValue("Save", "signjp2prefix", "");
+                _photoPrefix = oIni.ReadValue("Save", "photoprefix", String.Empty);
+                _signPrefix = oIni.ReadValue("Save", "signprefix", String.Empty);
+                _photoJP2Prefix = oIni.ReadValue("Save", "photojp2prefix", String.Empty);
+                _signJP2Prefix = oIni.ReadValue("Save", "signjp2prefix", String.Empty);
                 _photoSufix = oIni.ReadValue("Save", "photosufix", "F");
                 _signSufix = oIni.ReadValue("Save", "signsufix", "P");
                 _photoJP2Sufix = oIni.ReadValue("Save", "photojp2sufix", "F2");
@@ -205,7 +214,7 @@ namespace CertificateScanner
 
                 if (!int.TryParse(oIni.ReadValue("Save", "photowidth", "283"), out photowidth)) photowidth = 283;
                 if (!int.TryParse(oIni.ReadValue("Save", "photoheight", "364"), out photoheight)) photoheight = 364;
-                if (!int.TryParse(oIni.ReadValue("Save", "signheight", "283"), out signheight)) signheight = 283;
+                if (!int.TryParse(oIni.ReadValue("Save", "signwidth", "283"), out signwidth)) signwidth = 283;
                 if (!int.TryParse(oIni.ReadValue("Save", "signheight", "94"), out signheight)) signheight = 94;
 
                 _deviceuuid = oIni.ReadValue("Scan", "deviceuuid", AppDomain.CurrentDomain.BaseDirectory);
@@ -222,10 +231,10 @@ namespace CertificateScanner
             {
                 //Connect to Ini File "Config.ini" in current directory
                 IniInterface oIni = new IniInterface(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFileName));
-                oIni.WriteValue("Scan", "deviceuuid", "");
+                oIni.WriteValue("Scan", "deviceuuid", String.Empty);
             }
             string _olddeviceuuid = _deviceuuid;
-            _deviceuuid = "";
+            _deviceuuid = String.Empty;
             this.Info(String.Format("Droped old scanner with uuid=\"{0}\"", _olddeviceuuid), this.Messages("scannerUUIDDroped"));
         }
 
@@ -317,37 +326,59 @@ namespace CertificateScanner
         {
             if (String.IsNullOrWhiteSpace(textBoxNumber.Text))
                 this.Warn(new ArgumentNullException("textBoxNumber.Text"), this.Messages("sertificateNumberIsEmpty"));
-            else
-            {
-                string log = "";
-                string successlog = "";
 
+            if (!Directory.Exists(_path))
+            {
                 try
                 {
-                    log = successlog = "Saved in files:\n"; //
-
-                    string signjpgpath = Path.Combine(_path, String.Format(@"{0}{1}{2}.jpg", _signPrefix, textBoxNumber.Text, _signSufix));
-                    string photojpgpath = Path.Combine(_path, String.Format(@"{0}{1}{2}.jpg", _photoPrefix, textBoxNumber.Text, _photoSufix));
-                    string signjp2path = Path.Combine(_path, String.Format(@"{0}{1}{2}.jp2", _signJP2Prefix, textBoxNumber.Text, _signJP2Sufix));
-                    string photojp2path = Path.Combine(_path, String.Format(@"{0}{1}{2}.jp2", _photoJP2Prefix, textBoxNumber.Text, _photoJP2Sufix));
-                    
-                    successlog = String.Format("Signature in jpg -- \"{0}\";\n", signjpgpath) +
-                                 String.Format("Photo in jpg -- \"{0}\";\n", photojpgpath) +
-                                 String.Format("Signature in jp2 -- \"{0}\";\n", signjp2path) +
-                                 String.Format("Photo in jp2 -- \"{0}\";\n", photojp2path);
-
-                    log = CertificateScanner.WaiteWindow.WaitWindow.Show(SaveImagesWorkerMethod, this.Messages("saveProgress"), 
-                        new object[] { log, signjpgpath, photojpgpath, signjp2path, photojp2path }).ToString();
-                    //SaveImages(log, signjpgpath, photojpgpath, signjp2path, photojp2path);
-
-                    this.Info(log, this.Messages("resultSaved"));
+                    Directory.CreateDirectory(_path);
                 }
-                catch (Exception ex)
+                catch(Exception ex)
                 {
-                    this.Error(new Exception(String.Format("successfully saved: {0}\n Must be:{1}", log, successlog), ex), 
-                               this.Messages("resultCntSave"));
-                }
+                    this.Error(new Exception(String.Format("Directory not exist: {0}", _path), ex),
+                                   String.Format(this.Messages("resultCntSaveNullDir"), _path));
+                }                
             }
+
+            string log = String.Empty;
+            string successlog = String.Empty;
+
+            log = successlog = "Saved in files:\n"; //
+
+            string signjpgpath = Path.Combine(_path, String.Format(@"{0}{1}{2}.jpg", _signPrefix, textBoxNumber.Text, _signSufix));
+            string photojpgpath = Path.Combine(_path, String.Format(@"{0}{1}{2}.jpg", _photoPrefix, textBoxNumber.Text, _photoSufix));
+            string signjp2path = Path.Combine(_path, String.Format(@"{0}{1}{2}.jp2", _signJP2Prefix, textBoxNumber.Text, _signJP2Sufix));
+            string photojp2path = Path.Combine(_path, String.Format(@"{0}{1}{2}.jp2", _photoJP2Prefix, textBoxNumber.Text, _photoJP2Sufix));
+
+            bool fileExist = false;
+
+            foreach(string file in new List<String>(){signjpgpath, photojpgpath, signjp2path, photojp2path})
+                if (File.Exists(file))
+                    fileExist = true;
+
+            successlog = String.Format("Signature in jpg -- \"{0}\";\n", signjpgpath) +
+                            String.Format("Photo in jpg -- \"{0}\";\n", photojpgpath) +
+                            String.Format("Signature in jp2 -- \"{0}\";\n", signjp2path) +
+                            String.Format("Photo in jp2 -- \"{0}\";\n", photojp2path);
+
+            if ((fileExist) &&
+                (MessageBox.Show(this.Messages("resultAlredySaved"), this.Messages("resultAlredySavedCaption"), MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.No))
+                this.Warn(new Exception(String.Format("files already exist: {0}", successlog)), this.Messages("resultCntSaveAlredySaved"));
+                
+            try
+            {
+                log = CertificateScanner.WaiteWindow.WaitWindow.Show(SaveImagesWorkerMethod, this.Messages("saveProgress"),
+                    new object[] { log, signjpgpath, photojpgpath, signjp2path, photojp2path }).ToString();
+                //SaveImages(log, signjpgpath, photojpgpath, signjp2path, photojp2path);
+
+                this.Info(log, this.Messages("resultSaved"));
+            }
+            catch (Exception ex)
+            {
+                this.Error(new Exception(String.Format("can`t save: {0}\n Must be:{1}", log, successlog), ex),
+                            this.Messages("resultCntSave"));
+            }
+                    
         }
 
         private void SaveImagesWorkerMethod(object sender, CertificateScanner.WaiteWindow.WaitWindowEventArgs e)
@@ -459,7 +490,7 @@ namespace CertificateScanner
             // Check success
             if (dib.IsNull)
             {
-                this.Error(new FileNotFoundException("", input), this.Messages("jp2CdntLoadSource"));
+                this.Error(new FileNotFoundException(String.Empty, input), this.Messages("jp2CdntLoadSource"));
                 return false;
             }
             return true;
@@ -496,6 +527,7 @@ namespace CertificateScanner
                 }*/
                 fromQRScan = true;
                 checkBoxBarNumber.Checked = false;
+                textBoxNumber.Text = String.Empty;
                 var result = CertificateScanner.WaiteWindow.WaitWindow.Show(QRWorkerMethod, this.Messages("qrProgress"), new object[] { sourceimg.Clone(_barRect, System.Drawing.Imaging.PixelFormat.Format24bppRgb) });
                 checkBoxBarNumber.Checked = true;
                 fromQRScan = false;
@@ -503,9 +535,10 @@ namespace CertificateScanner
             }
             catch(Exception ex)
             {
+                fromQRScan = false;
                 this.Warn(ex, this.Messages("qrFail"));
             }
-            return "";
+            return String.Empty;
         }
 
         private void QRWorkerMethod(object sender, CertificateScanner.WaiteWindow.WaitWindowEventArgs e)

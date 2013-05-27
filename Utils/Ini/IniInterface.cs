@@ -116,8 +116,8 @@ namespace CertificateScanner.Ini
 		/// Read value from INI File, default = ""
 		/// </summary>
         public string ReadValue(string pSection, string pKey){
-			
-			return(z_GetString(pSection,pKey,""));
+
+            return (z_GetString(pSection, pKey, String.Empty));
 		
 		}
 
