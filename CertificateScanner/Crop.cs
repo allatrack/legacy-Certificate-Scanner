@@ -339,8 +339,10 @@ namespace CertificateScanner
                 area = new Rectangle(0, 0, SrcPicBox.Image.Width, SrcPicBox.Image.Height);
             Rectangle res = RectAndINI.WriteRectToIni(oIni, iniKey, rectCropArea, ratio, SrcPicBox.Image.Width, SrcPicBox.Image.Height, area);
 
+
+
             this.Info(
-                String.Format("Rect: X=\"{0}\", Y=\"{1}\", Width=\"{2}\", Height=\"{3}\".",
+                String.Format(iniKey + " Rect: X=\"{0}\", Y=\"{1}\", Width=\"{2}\", Height=\"{3}\".",
                                 res.X, res.Y, res.Width, res.Height),
                 this.Messages("rectSaved"));
                 

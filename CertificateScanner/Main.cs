@@ -10,6 +10,8 @@ using CertificateScanner.Utils;
 using FreeImageAPI;
 using CertificateScanner.ExceptionDecor;
 using AForge.Imaging.Filters;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace CertificateScanner
 {
@@ -30,6 +32,12 @@ namespace CertificateScanner
         int photoheight = 364;
         int signwidth = 283;
         int signheight = 94;
+
+        int signdefaultlefttreshold = 125;
+        int signdefaultrighttreshold = 255;
+        int photodefaultlefttreshold;
+        int photodefaultrighttreshold = 255;
+
         string _deviceuuid;
         string _photoPrefix;
         string _signPrefix;
@@ -39,6 +47,10 @@ namespace CertificateScanner
         string _signSufix;
         string _photoJP2Sufix;
         string _signJP2Sufix;
+
+        bool photoResized, signResized;
+
+        Image _srcPhoto, _srcSign;
 
         bool fromQRScan;
 
@@ -64,6 +76,8 @@ namespace CertificateScanner
             if (reCreated)
                 this.Info("!!!!!!Configuration has been restored!!!!!!!", this.Messages("Конфігураційні файли відновлено після пошкоджень."));
 
+            this.Text += String.Format(" " + this.Messages("version"), FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
+
             InitializeComponent();
         }
 
@@ -84,7 +98,9 @@ namespace CertificateScanner
                 checkBoxAuto.Checked = true;
             }
 
-            buttonSave.Enabled = buttonPhotoRect.Enabled = buttonSignatureRect.Enabled = buttonBarRect.Enabled = true;
+            photoResized = signResized = false;
+            buttonSave.Enabled = false;
+            buttonPhotoRect.Enabled = buttonSignatureRect.Enabled = buttonBarRect.Enabled = true;
             buttonEditSignature.Enabled = button3.Enabled = true;
 
             using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmp.jpg"), FileMode.Open)) //File not block
@@ -93,12 +109,16 @@ namespace CertificateScanner
                 var sourceimg = (Bitmap)bmp.Clone();
 
                 //Photo
-                pictureBoxPhoto.Image = new Bitmap(sourceimg).Clone(_photoRect, PixelFormat.Format24bppRgb);
+                _srcPhoto = new Bitmap(sourceimg).Clone(_photoRect, PixelFormat.Format24bppRgb);
+                pictureBoxPhoto.Image = ImageComputation.ImageConvertions.ApplyRangeLevels(photodefaultlefttreshold, photodefaultrighttreshold, _srcPhoto);
                 this.Info("Successfuly get Photo");
 
                 //Signature
-                pictureBoxSignature.Image = ImageComputation.ImageConvertions.MakeGrayscale3(new Bitmap(sourceimg).Clone(_signRect, PixelFormat.Format24bppRgb));
+                _srcSign = ImageComputation.ImageConvertions.MakeGrayscale3(new Bitmap(sourceimg).Clone(_signRect, PixelFormat.Format24bppRgb));
+                pictureBoxSignature.Image = ImageComputation.ImageConvertions.ApplyRangeLevels(signdefaultlefttreshold, signdefaultrighttreshold, _srcSign);
                 this.Info("Successfuly get Signature");
+
+                this.Info("scanner_ScanComplete", this.Messages("resizeImage"));
 
                 //QRCode
                 string numb = String.Empty;
@@ -217,6 +237,11 @@ namespace CertificateScanner
                 if (!int.TryParse(oIni.ReadValue("Save", "signwidth", "283"), out signwidth)) signwidth = 283;
                 if (!int.TryParse(oIni.ReadValue("Save", "signheight", "94"), out signheight)) signheight = 94;
 
+                if (!int.TryParse(oIni.ReadValue("Save", "signdefaultlefttreshold", "125"), out signdefaultlefttreshold)) signdefaultlefttreshold = 125;
+                if (!int.TryParse(oIni.ReadValue("Save", "signdefaultrighttreshold", "255"), out signdefaultrighttreshold)) signdefaultrighttreshold = 255;
+                if (!int.TryParse(oIni.ReadValue("Save", "photodefaultlefttreshold", "0"), out photodefaultlefttreshold)) photodefaultlefttreshold = 0;
+                if (!int.TryParse(oIni.ReadValue("Save", "photodefaultrighttreshold", "255"), out photodefaultrighttreshold)) photodefaultrighttreshold = 255;
+
                 _deviceuuid = oIni.ReadValue("Scan", "deviceuuid", AppDomain.CurrentDomain.BaseDirectory);
                 
                 _signRect = RectAndINI.ReadRectFromIni(oIni, "Regionsign");
@@ -240,6 +265,10 @@ namespace CertificateScanner
 
         private void buttonSignatureRect_Click(object sender, EventArgs e)
         {
+            photoResized = signResized = false;
+
+            buttonSave.Enabled = false;
+            
             using (Crop fCrop = new Crop(Path.Combine(Path.GetTempPath(), "tmp.jpg"), iniFileName, "Regionsign"))
                 fCrop.ShowDialog();
 
@@ -256,12 +285,18 @@ namespace CertificateScanner
                 var sourceimg = (Bitmap)bmp.Clone();
 
                 //Signature
-                pictureBoxSignature.Image = ImageComputation.ImageConvertions.MakeGrayscale3(new Bitmap(sourceimg).Clone(_signRect, PixelFormat.Format24bppRgb));
+                _srcSign = ImageComputation.ImageConvertions.MakeGrayscale3(new Bitmap(sourceimg).Clone(_signRect, PixelFormat.Format24bppRgb));
+                pictureBoxSignature.Image = ImageComputation.ImageConvertions.ApplyRangeLevels(signdefaultlefttreshold, signdefaultrighttreshold, _srcSign);
             }
+
+            this.Info("SignatureRect_Click", this.Messages("resizeImage"));
         }
 
         private void buttonPhotoRect_Click(object sender, EventArgs e)
         {
+            photoResized = signResized = false;
+            buttonSave.Enabled = false;
+            
             using (Crop fCrop = new Crop(Path.Combine(Path.GetTempPath(), "tmp.jpg"), iniFileName, "Regionphoto"))
                 fCrop.ShowDialog();
 
@@ -278,8 +313,11 @@ namespace CertificateScanner
                 var sourceimg = (Bitmap)bmp.Clone();
 
                 //Photo
-                pictureBoxPhoto.Image = new Bitmap(sourceimg).Clone(_photoRect, PixelFormat.Format24bppRgb);
+                _srcPhoto = new Bitmap(sourceimg).Clone(_photoRect, PixelFormat.Format24bppRgb);
+                pictureBoxPhoto.Image = ImageComputation.ImageConvertions.ApplyRangeLevels(photodefaultlefttreshold, photodefaultrighttreshold, _srcPhoto);
             }
+
+            this.Info("PhotoRect_Click", this.Messages("resizeImage"));
         }
 
         private void buttonBarRect_Click(object sender, EventArgs e)
@@ -387,16 +425,20 @@ namespace CertificateScanner
 
             double ratio = 1;
             ImageComputation.ImageConvertions.ScaleImage(pictureBoxSignature.Image, signwidth, signheight, out ratio).Save((String)e.Arguments[1], ImageFormat.Jpeg);
-            log += String.Format("Signature in jpg -- \"{0}\";\n", (String)e.Arguments[1]);
-
             ImageComputation.ImageConvertions.ScaleImage(pictureBoxPhoto.Image, photowidth, photoheight, out ratio).Save((String)e.Arguments[2], ImageFormat.Jpeg);
-            log += String.Format("Photo in jpg -- \"{0}\";\n", (String)e.Arguments[2]);
 
             SaveInJP2((String)e.Arguments[1], (String)e.Arguments[3], _signMaxWeight);
             log += String.Format("Signature in jp2 -- \"{0}\";\n", (String)e.Arguments[3]);
 
             SaveInJP2((String)e.Arguments[2], (String)e.Arguments[4], _photoMaxWeight);
             log += String.Format("Photo in jp2 -- \"{0}\";\n", (String)e.Arguments[4]);
+
+            pictureBoxSignature.Image.Save((String)e.Arguments[1], ImageFormat.Jpeg);
+            log += String.Format("Signature in jpg -- \"{0}\";\n", (String)e.Arguments[1]);
+
+            pictureBoxPhoto.Image.Save((String)e.Arguments[2], ImageFormat.Jpeg);
+            log += String.Format("Photo in jpg -- \"{0}\";\n", (String)e.Arguments[2]);
+
             e.Result = log;
         }
 
@@ -600,31 +642,39 @@ namespace CertificateScanner
 
         private void buttonEditSignature_Click(object sender, EventArgs e)
         {
-            using (CertificateScanner.ImageProcessing.ImageCorrection fCorrection = new CertificateScanner.ImageProcessing.ImageCorrection(pictureBoxSignature.Image, iniFileName, "sign"))
+            using (CertificateScanner.ImageProcessing.ImageCorrection fCorrection = new CertificateScanner.ImageProcessing.ImageCorrection(_srcSign, iniFileName, "sign"))
             {
                 if (fCorrection.ShowDialog() == DialogResult.OK)
                 {
+                    if (fCorrection.Corrected) signResized = true;
                     using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmpcorrection.jpg"), FileMode.Open)) //File not block
                     {
                         var bmp = new Bitmap(fs);
                         //Signature
                         pictureBoxSignature.Image = (Bitmap)bmp.Clone();
                     }
+
+                    if (signResized && photoResized)
+                        buttonSave.Enabled = true;
                 }
             }
         }
 
         private void buttonEditPhoto_Click(object sender, EventArgs e)
         {
-            using (CertificateScanner.ImageProcessing.ImageCorrection fCorrection = new CertificateScanner.ImageProcessing.ImageCorrection(pictureBoxPhoto.Image, iniFileName, "photo"))
+            using (CertificateScanner.ImageProcessing.ImageCorrection fCorrection = new CertificateScanner.ImageProcessing.ImageCorrection(_srcPhoto, iniFileName, "photo"))
             {
                 if (fCorrection.ShowDialog() == DialogResult.OK)
                 {
+                    if (fCorrection.Corrected) photoResized = true;
                     using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), "tmpcorrection.jpg"), FileMode.Open)) //File not block
                     {
                         var bmp = new Bitmap(fs);
                         pictureBoxPhoto.Image = (Bitmap)bmp.Clone();
                     }
+
+                    if (signResized && photoResized)
+                        buttonSave.Enabled = true;
                 }
             }
         }

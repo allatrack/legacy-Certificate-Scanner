@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using NLog;
 using System.Windows.Forms;
 using CertificateScanner.Utils;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace CertificateScanner.ExceptionDecor
 {
@@ -24,7 +26,7 @@ namespace CertificateScanner.ExceptionDecor
         private static void ErrorLog(string type, Exception ex, string message = "")
         {
             Logger logger = LogManager.GetCurrentClassLogger();
-            string baseString = String.Format("User:\"{0}\"; SystemMessage:\"{1}\"; Source:\"{2}\"; StackTrace:\"{3}\"; Method:\"{4}\"; ", Settings.Instance.Constant("baseUser"), ex.Message, ex.Source, ex.StackTrace, ex.TargetSite);
+            string baseString = String.Format("Program Version: \"{0}\" User:\"{1}\"; SystemMessage:\"{2}\"; Source:\"{3}\"; StackTrace:\"{4}\"; Method:\"{5}\"; ", FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion, Settings.Instance.Constant("baseUser"), ex.Message, ex.Source, ex.StackTrace, ex.TargetSite);
 
             if (!String.IsNullOrWhiteSpace(message))
                 baseString += String.Format("UserMessage:\"{0}\"; ", message);
@@ -84,7 +86,7 @@ namespace CertificateScanner.ExceptionDecor
         private static void InfoLog(string comment, ICollection<DictionaryEntry> data = null, string message = "")
         {
             Logger logger = LogManager.GetCurrentClassLogger();
-            string baseString = String.Format("User:\"{0}\"; CommentMessage:\"{1}\"; ", Settings.Instance.Constant("baseUser"), comment);
+            string baseString = String.Format("Program Version: \"{0}\" User:\"{1}\"; CommentMessage:\"{2}\"; ", FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion, Settings.Instance.Constant("baseUser"), comment);
 
             if (!String.IsNullOrWhiteSpace(message))
                 baseString += String.Format("UserMessage:\"{0}\"; ", message);

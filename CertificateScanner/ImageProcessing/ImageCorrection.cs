@@ -6,7 +6,6 @@ using CertificateScanner.Ini;
 using System.Windows.Forms;
 using CertificateScanner.ExceptionDecor;
 using CertificateScanner.Utils;
-using AForge.Imaging.Filters;
 
 namespace CertificateScanner.ImageProcessing
 {
@@ -45,10 +44,20 @@ namespace CertificateScanner.ImageProcessing
         Image _image;
         Image _imageOut;
 
+        int defaultlefttreshold = 0;
+        int defaultrighttreshold = 255;
 
+        bool correct;
 
+        public bool Corrected
+        {
+            get
+            {
+                return correct;
+            }
 
-
+            set { }
+        }
 
         public ImageCorrection(Image image, string inifilename, string inikey)
         {
@@ -117,10 +126,12 @@ namespace CertificateScanner.ImageProcessing
             realRectCropArea = NormaliseRect(realRectCropArea.Width, realRectCropArea.Height, realRectCropArea, false);
 
             _imageOut = ((Bitmap)_image).Clone(realRectCropArea, PixelFormat.Format24bppRgb);
-            pictureBoxOut.Image = _imageOut;
+            pictureBoxOut.Image = ImageComputation.ImageConvertions.ApplyRangeLevels(defaultlefttreshold, defaultrighttreshold, _imageOut);
 
-            histogram.DrawHistogram(GetHistogram((Bitmap)pictureBoxOut.Image));
-            rangeLevels.Value = new DevExpress.XtraEditors.Repository.TrackBarRange(0, 255);
+            histogram.DrawHistogram(GetHistogram((Bitmap)_imageOut));
+            rangeLevels.Value = new DevExpress.XtraEditors.Repository.TrackBarRange(defaultlefttreshold, defaultrighttreshold);
+
+            correct = true;
         }
 
         private static long[] GetHistogram(Bitmap picture)
@@ -369,9 +380,7 @@ namespace CertificateScanner.ImageProcessing
 
         private void Form_Load(object sender, EventArgs e)
         {
-            _imageOut = SrcPicBox.Image = pictureBoxOut.Image = _image;
-
-            histogram.DrawHistogram(GetHistogram((Bitmap)pictureBoxOut.Image));
+            _imageOut = SrcPicBox.Image = _image;
 
             var ratioX = (double)SrcPicBox.Width / _image.Width;
             var ratioY = (double)SrcPicBox.Height / _image.Height;
@@ -391,12 +400,39 @@ namespace CertificateScanner.ImageProcessing
 
             double phCoef = (double)phWidht / phHeight;
             double sgnCoef = (double)sgnWidht / sgnHeight;
+            var initresholdleftkey = "signdefaultlefttreshold";
+            var initresholdrightkey = "signdefaultrighttreshold";
             switch (iniKey.ToLower())
             {
-                case "photo": coef = phCoef; break;
-                case "sign": coef = sgnCoef; break;
-                default: coef = 1; break;
+                case "photo": 
+                    {
+                        coef = phCoef; 
+                        initresholdleftkey = "photodefaultlefttreshold";
+                        initresholdrightkey = "photodefaultrighttreshold";
+                    }
+                    break;
+                case "sign": 
+                    {
+                        coef = sgnCoef; 
+                        initresholdleftkey = "signdefaultlefttreshold";
+                        initresholdrightkey = "signdefaultrighttreshold";
+                    }
+                    break;
+                default: 
+                    {
+                        coef = 1; 
+                        initresholdleftkey = "signdefaultlefttreshold";
+                        initresholdrightkey = "signdefaultrighttreshold";
+                    }
+                    break;
             }
+
+            if (!int.TryParse(oIni.ReadValue("Save", initresholdleftkey, "0"), out defaultlefttreshold)) defaultlefttreshold = 125;
+            if (!int.TryParse(oIni.ReadValue("Save", initresholdrightkey, "255"), out defaultrighttreshold)) defaultrighttreshold = 255;
+            
+            pictureBoxOut.Image = ImageComputation.ImageConvertions.ApplyRangeLevels(defaultlefttreshold, defaultrighttreshold, _imageOut);
+            histogram.DrawHistogram(GetHistogram((Bitmap)_imageOut));
+            rangeLevels.Value = new DevExpress.XtraEditors.Repository.TrackBarRange(defaultlefttreshold, defaultrighttreshold);
         }
 
         private void SrcPicBox_Paint(object sender, PaintEventArgs e)
@@ -407,19 +443,9 @@ namespace CertificateScanner.ImageProcessing
 
         private void rangeLevels_EditValueChanged(object sender, EventArgs e)
         {
-            // create filter
-            LevelsLinear filter = new LevelsLinear()
-            { /* set ranges*/
-                InRed = new AForge.IntRange(rangeLevels.Value.Minimum, rangeLevels.Value.Maximum),
-                InGreen = new AForge.IntRange(rangeLevels.Value.Minimum, rangeLevels.Value.Maximum),
-                InBlue = new AForge.IntRange(rangeLevels.Value.Minimum, rangeLevels.Value.Maximum)
-            };
-            // apply the filter
-            using (Bitmap filteredImage = (Bitmap)_imageOut.Clone())
-            {
-                filter.ApplyInPlace(filteredImage);
-                pictureBoxOut.Image = (Bitmap)filteredImage.Clone();
-            }
+            pictureBoxOut.Image = ImageComputation.ImageConvertions.ApplyRangeLevels(rangeLevels.Value.Minimum, rangeLevels.Value.Maximum, _imageOut);
+            
+            //correct = true;
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
@@ -435,6 +461,7 @@ namespace CertificateScanner.ImageProcessing
                     File.Delete(Path.Combine(Path.GetTempPath(), "tmpcorrection.jpg"));
                 pictureBoxOut.Image.Save(Path.Combine(Path.GetTempPath(), "tmpcorrection.jpg"));
                 this.DialogResult = DialogResult.OK;
+                this.Info(iniKey + " image successfully corrected");
                 this.Close();
             }
             catch (Exception ex)

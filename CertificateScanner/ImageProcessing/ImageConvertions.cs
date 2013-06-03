@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.Drawing;
 using System.IO;
+using AForge.Imaging.Filters;
 
 namespace CertificateScanner.ImageComputation
 {
@@ -20,6 +21,22 @@ namespace CertificateScanner.ImageComputation
             return null;
         }
 
+        public static Image ApplyRangeLevels(int minimum, int maximum, Image inputImage)
+        {
+            // create filter
+            LevelsLinear filter = new LevelsLinear()
+            { /* set ranges*/
+                InRed = new AForge.IntRange(minimum, maximum),
+                InGreen = new AForge.IntRange(minimum, maximum),
+                InBlue = new AForge.IntRange(minimum, maximum)
+            };
+            // apply the filter
+            using (Bitmap filteredImage = (Bitmap)inputImage.Clone())
+            {
+                filter.ApplyInPlace(filteredImage);
+                return (Bitmap)filteredImage.Clone();
+            }
+        }
 
         public static Image ScaleImage(Image image, int maxWidth, int maxHeight, out double ratio)
         {
