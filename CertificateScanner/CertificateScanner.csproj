@@ -88,6 +88,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Components\SA_PictureBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Crop.cs">
       <SubType>Form</SubType>
     </Compile>

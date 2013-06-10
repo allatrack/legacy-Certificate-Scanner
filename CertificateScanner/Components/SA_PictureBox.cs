@@ -7,6 +7,7 @@ namespace CertificateScanner.Components
 {
     enum RectangleStatus { Creating, Resizing, Moving };
     public delegate void SelectedAreaChangedEventHandler(object sender, EventArgs e);
+    public delegate void ImageChangedHandler(object sender, EventArgs e);
     class SA_PictureBox : System.Windows.Forms.PictureBox
     {
         // current line
@@ -55,7 +56,7 @@ namespace CertificateScanner.Components
         public Image Image
         {
             get { return base.Image; }
-            set { base.Image = value; CalculateImagePosition(); }
+            set { base.Image = value; CalculateImagePosition(); OnImageChanged(EventArgs.Empty); }
         }
 
         private void SA_PictureBox_Resize(object sender, EventArgs e)
@@ -104,25 +105,28 @@ namespace CertificateScanner.Components
         private void PBX_MouseUp(object sender, MouseEventArgs e)
         {
             isMousePressed = false;
-            Rectangle realRectCropArea = new Rectangle((int)((rectCropArea.X - _imageX) / _ratio),
-                                                       (int)((rectCropArea.Y - _imageY) / _ratio),
-                                                       (int)(rectCropArea.Width / _ratio),
-                                                       (int)(rectCropArea.Height / _ratio));
-            if (realRectCropArea.X + realRectCropArea.Width > _image.Width)
-                realRectCropArea.Width = _image.Width - realRectCropArea.X;
-            if (realRectCropArea.Y + realRectCropArea.Height > _image.Height)
-                realRectCropArea.Height = _image.Height - realRectCropArea.Y;
-            realRectCropArea = NormaliseRect(realRectCropArea.Width, realRectCropArea.Height, realRectCropArea, false);
-            SelectedRectangle = realRectCropArea;
-            if (_image != null)
+            if (this.Image != null)
             {
-                var sourceimg = (Bitmap)_image.Clone();
-                SelectedImage = new Bitmap(sourceimg).Clone(realRectCropArea, PixelFormat.Format24bppRgb);
+                Rectangle realRectCropArea = new Rectangle((int)((rectCropArea.X - _imageX) / _ratio),
+                                                           (int)((rectCropArea.Y - _imageY) / _ratio),
+                                                           (int)(rectCropArea.Width / _ratio),
+                                                           (int)(rectCropArea.Height / _ratio));
+                if (realRectCropArea.X + realRectCropArea.Width > _image.Width)
+                    realRectCropArea.Width = _image.Width - realRectCropArea.X;
+                if (realRectCropArea.Y + realRectCropArea.Height > _image.Height)
+                    realRectCropArea.Height = _image.Height - realRectCropArea.Y;
+                realRectCropArea = NormaliseRect(realRectCropArea.Width, realRectCropArea.Height, realRectCropArea, false);
+                SelectedRectangle = realRectCropArea;
+                if (_image != null)
+                {
+                    var sourceimg = (Bitmap)_image.Clone();
+                    SelectedImage = new Bitmap(sourceimg).Clone(realRectCropArea, PixelFormat.Format24bppRgb);
+                }
+                OnSelectedAreaChanged(EventArgs.Empty);
+
+                oldPictureBoxWidth = this.Width;
+                oldPictureBoxHeight = this.Height;
             }
-            OnSelectedAreaChanged(EventArgs.Empty);
-            
-            oldPictureBoxWidth = this.Width;
-            oldPictureBoxHeight = this.Height;
         }
         private void PBX_MouseMove(object sender, MouseEventArgs e)
         {
@@ -420,30 +424,72 @@ namespace CertificateScanner.Components
         private void CalculateImagePosition()
         {
             _image = (Bitmap)this.Image;
+            if (_image != null)
+            {
+                var ratioX = (double)this.Width / _image.Width;
+                var ratioY = (double)this.Height / _image.Height;
+                _ratio = Math.Min(ratioX, ratioY);
 
-            var ratioX = (double)this.Width / _image.Width;
-            var ratioY = (double)this.Height / _image.Height;
-            _ratio = Math.Min(ratioX, ratioY);
-
-            var scaledWidth = _image.Width * _ratio;
-            var scaledHeight = _image.Height * _ratio;
-            _imageX = (int)((this.Width - scaledWidth) / 2);
-            _imageY = (int)((this.Height - scaledHeight) / 2);
-            _imageW = _image.Width;
-            _imageH = _image.Height;
-            _pbxW = this.Width;
-            _pbxH = this.Height;
+                var scaledWidth = _image.Width * _ratio;
+                var scaledHeight = _image.Height * _ratio;
+                _imageX = (int)((this.Width - scaledWidth) / 2);
+                _imageY = (int)((this.Height - scaledHeight) / 2);
+                _imageW = _image.Width;
+                _imageH = _image.Height;
+                _pbxW = this.Width;
+                _pbxH = this.Height;
+            }
         }
 
 
         public event SelectedAreaChangedEventHandler SelectedAreaChanged;
+        public event ImageChangedHandler ImageChanged;
 
         protected virtual void OnSelectedAreaChanged(EventArgs e)
         {
             if (SelectedAreaChanged != null)
                 SelectedAreaChanged(this, e);
         }
+        protected virtual void OnImageChanged(EventArgs e)
+        {
+            if (ImageChanged != null)
+                ImageChanged(this, e);
+        }
 
-        
+        public void InitCropArea(Point e, Point ptOriginalinit)
+        {
+            int w;
+            int h1;
+            if (e.X > ptOriginalinit.X && e.Y > ptOriginalinit.Y)
+            {
+                rectCropArea.X = ptOriginalinit.X;
+                rectCropArea.Y = ptOriginalinit.Y;
+                w = e.X - ptOriginalinit.X;
+                h1 = e.Y - ptOriginalinit.Y;
+            }
+            else if (e.X < ptOriginalinit.X && e.Y > ptOriginalinit.Y)
+            {
+                rectCropArea.X = e.X;
+                rectCropArea.Y = ptOriginalinit.Y;
+                w = ptOriginalinit.X - e.X;
+                h1 = e.Y - ptOriginalinit.Y;
+            }
+            else if (e.X > ptOriginalinit.X && e.Y < ptOriginalinit.Y)
+            {
+                rectCropArea.X = ptOriginalinit.X;
+                rectCropArea.Y = e.Y;
+                w = e.X - ptOriginalinit.X;
+                h1 = ptOriginalinit.Y - e.Y;
+            }
+            else
+            {
+                rectCropArea.X = e.X;
+                rectCropArea.Y = e.Y;
+                w = ptOriginalinit.X - e.X;
+                h1 = ptOriginalinit.Y - e.Y;
+            }
+            rectCropArea.Width = w;
+            rectCropArea.Height = h1;
+        }
     }
 }
