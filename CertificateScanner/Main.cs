@@ -284,7 +284,7 @@ namespace CertificateScanner
                 var bmp = new Bitmap(fs);
                 var sourceimg = (Bitmap)bmp.Clone();
 
-                //Signature 
+                //Signature
                 _srcSign = ImageComputation.ImageConvertions.MakeGrayscale3(new Bitmap(sourceimg).Clone(_signRect, PixelFormat.Format24bppRgb));
                 pictureBoxSignature.Image = ImageComputation.ImageConvertions.ApplyRangeLevels(signdefaultlefttreshold, signdefaultrighttreshold, _srcSign);
             }
